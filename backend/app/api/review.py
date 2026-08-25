@@ -1,4 +1,3 @@
-"""复核工作台接口：待复核列表、单笔/批量复核。"""
 from __future__ import annotations
 
 from datetime import date, time
@@ -11,6 +10,7 @@ from app.api.deps import get_current_user
 from app.contract import ReviewResult
 from app.database import get_db
 from app.models import Bank, BankAccount
+from app.services import account_mapper as mapper_svc
 from app.services import review as review_svc
 
 router = APIRouter(prefix="/api/review", tags=["review"])
@@ -30,56 +30,26 @@ class BatchReviewRequest(BaseModel):
 
 
 @router.get("/pending")
-def pending(
-    limit: int = 100,
-    offset: int = 0,
-    db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user),
-):
+def pending(limit: int = 100, offset: int = 0, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
     flows = review_svc.list_pending(db, limit=limit, offset=offset)
     return [_flow_dict(db, f) for f in flows]
 
 
 @router.post("/decide")
-def decide(
-    body: ReviewRequest,
-    db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user),
-    request: Request = None,
-):
+def decide(body: ReviewRequest, db: Session = Depends(get_db), user: dict = Depends(get_current_user), request: Request = None):
     try:
-        r = review_svc.review_record(
-            db,
-            record_id=body.record_id,
-            result=body.result,
-            reviewer=user["username"],
-            matched_subject=body.matched_subject,
-            comment=body.comment,
-            ip_address=_ip(request),
-        )
+        r = review_svc.review_record(db, record_id=body.record_id, result=body.result, reviewer=user["username"], matched_subject=body.matched_subject, comment=body.comment, ip_address=_ip(request))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return {"review_id": r.review_id, "result": r.review_result, "record_id": body.record_id}
 
 
 @router.post("/decide-batch")
-def decide_batch(
-    body: BatchReviewRequest,
-    db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user),
-    request: Request = None,
-):
+def decide_batch(body: BatchReviewRequest, db: Session = Depends(get_db), user: dict = Depends(get_current_user), request: Request = None):
     done = []
     for rid in body.record_ids:
         try:
-            r = review_svc.review_record(
-                db,
-                record_id=rid,
-                result=body.result,
-                reviewer=user["username"],
-                comment=body.comment,
-                ip_address=_ip(request),
-            )
+            r = review_svc.review_record(db, record_id=rid, result=body.result, reviewer=user["username"], comment=body.comment, ip_address=_ip(request))
             done.append({"record_id": rid, "result": r.review_result})
         except ValueError:
             done.append({"record_id": rid, "result": "SKIPPED"})
@@ -110,4 +80,5 @@ def _flow_dict(db: Session, f) -> dict:
         "process_status": f.process_status,
         "validation_status": f.validation_status,
         "exception_type": f.exception_type,
+        "auto_subject": (f.ext_json or {}).get(mapper_svc.AUTO_SUBJECT_KEY),
     }
