@@ -41,7 +41,7 @@ def _db_info() -> dict:
 
 
 def _bank_check() -> dict:
-    from app.adapters.api_adapter import MockBankApiAdapter
+    from app.ingest.adapters.api_adapter import MockBankApiAdapter
 
     url = settings.bank_api_base_url
     signed = bool(settings.bank_api_sign_secret)

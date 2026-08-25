@@ -16,7 +16,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app import models  # noqa: F401  注册全部 ORM 模型
-from app.api import auth, dashboard, ingest, push, review, settings as settings_api, trace
+from app.api import auth, dashboard, push, review, settings as settings_api, trace
+from app.ingest.api import router as ingest_router
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.seed import ensure_seed
@@ -43,8 +44,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for router_module in (auth, ingest, review, push, dashboard, trace, settings_api):
+for router_module in (auth, review, push, dashboard, trace, settings_api):
     app.include_router(router_module.router)
+app.include_router(ingest_router)
 
 
 @app.get("/api/health")

@@ -11,7 +11,7 @@ from app.core.deps import get_current_user
 from app.core.contract import ReviewResult
 from app.core.database import get_db
 from app.models import Bank, BankAccount
-from app.services import account_mapper as mapper_svc
+from app.ingest import mapper as mapper_svc
 from app.services import review as review_svc
 
 router = APIRouter(prefix="/api/review", tags=["review"])

@@ -25,11 +25,11 @@ os.environ["AUTO_PASS_ENABLED"] = "false"  # 对齐联调约定第七节：PASS/
 from sqlalchemy import create_engine, func, select, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 
-from app.adapters import get_adapter  # noqa: E402
+from app.ingest.adapters import get_adapter  # noqa: E402
 from app.core.contract import SourceType  # noqa: E402
 from app.core.database import Base  # noqa: E402
 from app.models import FlowValidation, TransFlow  # noqa: E402
-from app.services import ingest as ingest_svc  # noqa: E402
+from app.ingest import service as ingest_svc  # noqa: E402
 from app.core import seed  # noqa: E402
 
 DATA_DIR = _here.parents[2] / "数据工程" / "mock_bank_flow_data"
