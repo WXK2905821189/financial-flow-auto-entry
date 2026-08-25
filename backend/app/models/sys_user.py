@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy import BigInteger, Boolean, DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base, BIGINT_PK
+from app.core.database import Base, BIGINT_PK
 
 
 class User(Base):

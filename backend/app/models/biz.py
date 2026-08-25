@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base, BIGINT_PK
+from app.core.database import Base, BIGINT_PK
 
 
 class FlowReview(Base):
