@@ -1,21 +1,8 @@
-"""真实银企直联适配器（预留切换点）。
-
-对应决策 D6：真实银行 API 预留切换点。真实凭据就绪后（决策 D3）实现
-_fetch_remote() 拉取原始报文并映射为 BankTransaction，即可无缝切换，不动核心链路。
-"""
-from __future__ import annotations
-
+"""采集适配层统一出口：import 本包即触发三类适配器注册。"""
+from app.adapters import api_adapter  # noqa: F401
+from app.adapters import file_adapter  # noqa: F401
+from app.adapters import mock_adapter  # noqa: F401
 from app.adapters.base import BaseAdapter
-from app.adapters.registry import register_adapter
-from app.contract import BankTransaction, SourceType
+from app.adapters.registry import get_adapter, list_adapters, register_adapter
 
-
-@register_adapter
-class BankApiAdapter(BaseAdapter):
-    source_type = SourceType.API
-
-    def fetch(self, **kwargs) -> list[BankTransaction]:
-        raise NotImplementedError(
-            "真实银企直联接口暂未接入（决策 D3 待银行凭据）。"
-            "实现 _fetch_remote() 拉取原始报文并映射为 BankTransaction 后启用。"
-        )
+__all__ = ["BaseAdapter", "register_adapter", "get_adapter", "list_adapters"]

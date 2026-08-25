@@ -11,8 +11,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
-from app.database import get_db
+from app.core.deps import get_current_user
+from app.core.database import get_db
 from app.models import Bank, BankAccount, FlowBatch, FlowReview, FlowValidation, PushRecord, TransFlow
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
@@ -155,7 +155,6 @@ def recon(db: Session = Depends(get_db), user: dict = Depends(get_current_user))
     loaded_subq = (
         select(
             TransFlow.batch_id,
-            func.count().label("loaded_count"),
             func.round(func.sum(TransFlow.amount), 2).label("loaded_amount"),
         )
         .group_by(TransFlow.batch_id)
@@ -169,7 +168,10 @@ def recon(db: Session = Depends(get_db), user: dict = Depends(get_current_user))
             FlowBatch.source_ref,
             FlowBatch.total_count,
             FlowBatch.total_amount,
-            func.coalesce(loaded_subq.c.loaded_count, 0).label("loaded_count"),
+            FlowBatch.loaded_count,
+            FlowBatch.duplicated_count,
+            FlowBatch.failed_count,
+            FlowBatch.warned_count,
             func.coalesce(loaded_subq.c.loaded_amount, 0).label("loaded_amount"),
         )
         .outerjoin(loaded_subq, loaded_subq.c.batch_id == FlowBatch.batch_id)
@@ -187,6 +189,9 @@ def recon(db: Session = Depends(get_db), user: dict = Depends(get_current_user))
                 "source_ref": r.source_ref,
                 "expected_count": expected_count,
                 "loaded_count": loaded_count,
+                "duplicated_count": int(r.duplicated_count),
+                "failed_count": int(r.failed_count),
+                "warned_count": int(r.warned_count),
                 "count_diff": expected_count - loaded_count,
                 "expected_amount": str(r.total_amount),
                 "loaded_amount": str(r.loaded_amount or 0),

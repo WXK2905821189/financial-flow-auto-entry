@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from app.config import settings
+from app.core.config import settings
 
 _ITERATIONS = 200_000
 
