@@ -1,3 +1,10 @@
+"""采集适配层联调脚本：消费数据工程师 mock 数据源，验证适配层映射与落库链路。
+
+覆盖三类数据源（契约 JSON 平铺/批次数组、银行原始报文、CSV），
+并对异常样例做「实际行为 vs 数据工程师预期」口径诊断。
+
+用法：cd backend && python scripts/integration_join.py
+"""
 from __future__ import annotations
 
 import os
@@ -19,11 +26,11 @@ from sqlalchemy import create_engine, func, select, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 
 from app.adapters import get_adapter  # noqa: E402
-from app.contract import SourceType  # noqa: E402
-from app.database import Base  # noqa: E402
+from app.core.contract import SourceType  # noqa: E402
+from app.core.database import Base  # noqa: E402
 from app.models import FlowValidation, TransFlow  # noqa: E402
 from app.services import ingest as ingest_svc  # noqa: E402
-from app.services import seed  # noqa: E402
+from app.core import seed  # noqa: E402
 
 DATA_DIR = _here.parents[2] / "数据工程" / "mock_bank_flow_data"
 
@@ -169,10 +176,11 @@ def part3_anomaly_diagnosis() -> None:
             print(f"  [{label}] 输入 {len(txns)} 笔 → loaded={s.loaded} dup={s.duplicated} "
                   f"failed={s.failed} warned={s.warned} | 留痕={dict(rules)}")
 
-    print("\n  ⚠ 预期差异（需与数据工程师口径对齐）：")
+    print("\n  ⚠ 口径对齐说明（已随 A1/A2/R006 落地）：")
     print("    1. 负金额 / dc_flag=X / 缺流水号 / 缺金额 / 金额=0 被适配层强契约拦截（跳过或 abs 清洗），R002/R003 不触发")
-    print("    2. FAIL 的 process_status 本实现=REJECTED，而联调约定第七节=LOADED")
-    print("    3. R003 对方户名缺失当前=FAIL；财务已拍板 R003b 降级 WARN（待数据工程师同步落地）")
+    print("    2. 校验 FAIL 的 process_status=A2 已置 LOADED（先落库留痕），REJECTED 仅留给人工驳回")
+    print("    3. R003b 已落地（A1）：对方户名缺失 → WARN 降级转人工复核，不阻塞入库")
+    print("    4. R006 批次余额勾稽：银行报表提供期初/期末余额时启用，缺省 SKIP")
 
 
 def main() -> None:

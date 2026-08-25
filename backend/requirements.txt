@@ -9,3 +9,7 @@ httpx==0.27.2
 openpyxl==3.1.5
 python-multipart==0.0.9
 PyJWT==2.9.0
+requests==2.32.3
+
+# 金蝶云星空官方 OpenAPI SDK（第三方系统登录授权签名；已 vendored 到 vendor/ 目录，避免依赖外部源）
+# 安装：pip install vendor/kingdee.cdp.webapi.sdk-8.2.0-py3-none-any.whl
