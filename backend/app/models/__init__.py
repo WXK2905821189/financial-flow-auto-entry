@@ -4,7 +4,7 @@ from app.models.biz import FlowReview, PushRecord
 from app.models.dim import AccountMapping, Bank, BankAccount, ValidationRule
 from app.models.dwd import FlowBatch, FlowValidation, TransFlow
 from app.models.ods import BankRawFlow
-from app.models.sys_user import User
+from app.models.sys_user import RolePermission, User, UserScope, UserSession
 
 __all__ = [
     "Bank",
@@ -19,4 +19,7 @@ __all__ = [
     "PushRecord",
     "AuditLog",
     "User",
+    "RolePermission",
+    "UserScope",
+    "UserSession",
 ]

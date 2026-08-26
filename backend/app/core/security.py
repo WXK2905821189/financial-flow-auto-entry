@@ -32,11 +32,11 @@ def verify_password(password: str, hashed: str) -> bool:
         return False
 
 
-def create_access_token(subject: str, role: str) -> str:
+def create_access_token(subject: str, session_id: str) -> str:
     now = datetime.now(timezone.utc)
     payload = {
         "sub": subject,
-        "role": role,
+        "sid": session_id,
         "iat": now,
         "exp": now + timedelta(minutes=settings.access_token_expire_minutes),
     }
@@ -45,3 +45,18 @@ def create_access_token(subject: str, role: str) -> str:
 
 def decode_access_token(token: str) -> dict:
     return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+
+
+def create_refresh_secret() -> str:
+    return secrets.token_urlsafe(32)
+
+
+def hash_refresh_secret(secret: str) -> str:
+    return hashlib.sha256(secret.encode("utf-8")).hexdigest()
+
+
+def validate_password(password: str) -> None:
+    """最小口令规则：长度不少于 12，至少三类字符，避免弱口令进入生产账号。"""
+    kinds = sum((any(c.islower() for c in password), any(c.isupper() for c in password), any(c.isdigit() for c in password), any(not c.isalnum() for c in password)))
+    if len(password) < 12 or kinds < 3:
+        raise ValueError("密码至少 12 位，且需包含大写、小写、数字、符号中的至少三类")

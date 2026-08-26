@@ -16,7 +16,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app import models  # noqa: F401  注册全部 ORM 模型
-from app.api import auth, dashboard, push, review, settings as settings_api, trace
+from app.auth import api as auth_api
+from app.review import api as review_api
+from app.push import api as push_api
+from app.dashboard import api as dashboard_api
+from app.trace import api as trace_api
+from app.settings import api as settings_api
 from app.ingest.api import router as ingest_router
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
@@ -39,12 +44,13 @@ app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.frontend_origins_list,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
-for router_module in (auth, review, push, dashboard, trace, settings_api):
+for router_module in (auth_api, review_api, push_api, dashboard_api, trace_api, settings_api):
     app.include_router(router_module.router)
 app.include_router(ingest_router)
 
@@ -56,5 +62,5 @@ def health():
 
 # 前后端分离：前端静态目录位于项目根 frontend/（内网零构建，由 FastAPI 托管）
 _static_dir = Path(__file__).resolve().parents[2] / "frontend"
-if _static_dir.exists():
+if settings.serve_frontend_static and _static_dir.exists():
     app.mount("/", StaticFiles(directory=str(_static_dir), html=True), name="web")

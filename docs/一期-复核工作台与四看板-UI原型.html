@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财务流水自动入账 · 一期 UI 原型（复核工作台 + 四看板）</title>
+<style>
+:root{
+  --ink:#0f172a; --ink-2:#334155; --muted:#64748b; --line:#e2e8f0; --line-2:#eef2f7;
+  --bg:#f4f6fa; --card:#ffffff;
+  --brand:#1d4ed8; --brand-2:#2563eb; --brand-weak:#eff6ff;
+  --ok:#16a34a; --ok-weak:#f0fdf4;
+  --warn:#d97706; --warn-weak:#fffbeb;
+  --danger:#dc2626; --danger-weak:#fef2f2;
+  --info:#0e7490; --info-weak:#ecfeff;
+  --neutral:#64748b; --neutral-weak:#f1f5f9;
+  --in:#059669; --out:#dc2626;
+  --sidebar:#0b1730; --sidebar-2:#12224a; --sidebar-ink:#cbd5e1;
+  --radius:12px; --radius-sm:8px;
+  --shadow:0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.05);
+  --shadow-lg:0 12px 40px rgba(15,23,42,.18);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select{font-family:inherit;font-size:13px}
+a{color:var(--brand);text-decoration:none}
+.mono{font-variant-numeric:tabular-nums;font-family:"SF Mono",ui-monospace,Consolas,"Roboto Mono",monospace}
+.nowrap{white-space:nowrap}
+.hint{font-size:12px;color:var(--muted)}
+
+/* ===== 登录页 ===== */
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:
+ radial-gradient(1200px 600px at 80% -10%,#1e3a8a55,transparent),
+ radial-gradient(900px 500px at -10% 110%,#0e749055,transparent),
+ linear-gradient(160deg,#0b1730,#0d1f42 60%,#0b1a36);
+ color:#fff}
+.login-box{width:400px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:36px 34px;backdrop-filter:blur(12px)}
+.login-box .logo{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.login-box .logo .mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#0e7490);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.login-box h1{font-size:19px;font-weight:700;letter-spacing:.2px}
+.login-box .sub{font-size:13px;color:#cbd5e1;margin:6px 0 24px}
+.login-box label{display:block;font-size:12px;color:#cbd5e1;margin:14px 0 6px}
+.login-box input{width:100%;padding:11px 13px;border-radius:9px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;outline:none}
+.login-box input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px #3b82f655}
+.login-box input::placeholder{color:#94a3b8}
+.login-btn{width:100%;margin-top:24px;padding:12px;border-radius:9px;background:linear-gradient(135deg,#2563eb,#0e7490);color:#fff;font-weight:600;font-size:14px}
+.login-btn:hover{filter:brightness(1.06)}
+.secure-note{display:flex;align-items:center;gap:7px;margin-top:18px;font-size:12px;color:#94a3b8}
+.secure-note .dot{width:7px;height:7px;border-radius:50%;background:#34d399}
+
+/* ===== 布局 ===== */
+#app{display:none;height:100%}
+#app.on{display:flex}
+#sidebar{width:236px;background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;flex-shrink:0}
+.side-head{display:flex;align-items:center;gap:10px;padding:20px 18px 16px;border-bottom:1px solid #ffffff14}
+.side-head .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#2563eb,#0e7490);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:15px;flex-shrink:0}
+.side-head b{color:#fff;font-size:14.5px;display:block;line-height:1.2}
+.side-head span{font-size:11px;color:#7d8da6}
+.side-nav{padding:12px 10px;flex:1;overflow:auto}
+.nav-group{font-size:11px;color:#8ba0c0;letter-spacing:.05em;padding:14px 10px 5px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--sidebar-ink);font-size:13.5px;margin-bottom:2px;width:100%;text-align:left}
+.nav-item:hover{background:#ffffff0d;color:#fff}
+.nav-item.active{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-weight:600}
+.nav-item .ico{width:18px;height:18px;flex-shrink:0;opacity:.9}
+.nav-item .badge{margin-left:auto;background:var(--danger);color:#fff;font-size:10.5px;padding:1px 7px;border-radius:99px;font-weight:700}
+.side-foot{padding:14px 16px;border-top:1px solid #ffffff14;font-size:12px;color:#7d8da6}
+.side-foot .uid{display:flex;align-items:center;gap:8px}
+.side-foot .avatar{width:30px;height:30px;border-radius:50%;background:#334155;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#topbar{height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 22px;gap:16px;flex-shrink:0}
+#topbar .crumb{font-size:15px;font-weight:700}
+#topbar .crumb small{font-weight:400;color:var(--muted);margin-left:8px;font-size:12.5px}
+#topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.env-tag{font-size:11px;padding:3px 9px;border-radius:6px;background:var(--warn-weak);color:var(--warn);border:1px solid #fde68a;font-weight:600}
+.icon-btn{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);position:relative}
+.icon-btn:hover{background:var(--neutral-weak)}
+.icon-btn .dot{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--danger)}
+
+#content{flex:1;overflow:auto;padding:22px}
+.view{display:none}
+.view.on{display:block}
+
+/* ===== 卡片/统计 ===== */
+.card{background:var(--card);border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-hd{padding:15px 18px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:10px}
+.card-hd h3{font-size:14.5px;font-weight:650}
+.card-hd .sub{font-size:12px;color:var(--muted)}
+.card-hd .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.card-bd{padding:16px 18px}
+.stat-row{display:grid;gap:16px;grid-template-columns:repeat(4,1fr);margin-bottom:18px}
+.stat{padding:16px 18px;border-radius:var(--radius);background:#fff;border:1px solid var(--line-2);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat .lbl{font-size:12.5px;color:var(--muted)}
+.stat .val{font-size:26px;font-weight:700;margin-top:6px;letter-spacing:-.5px}
+.stat .val small{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px}
+.stat .delta{font-size:12px;margin-top:5px;color:var(--muted)}
+.stat .delta.up{color:var(--in)}
+.stat .delta.down{color:var(--out)}
+.stat .strip{position:absolute;top:0;left:0;right:0;height:3px}
+.stat.gain .strip{background:var(--in)} .stat.pay .strip{background:var(--out)}
+.stat.net .strip{background:var(--brand)} .stat.cnt .strip{background:var(--info)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-2-1{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mb16{margin-bottom:16px}
+
+/* ===== 表格 ===== */
+.tbl-wrap{overflow:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{position:sticky;top:0;background:#f8fafc;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+.tbl tr:hover td{background:#f8fafc;cursor:pointer}
+.tbl tr.checked td{background:#eff6ff}
+.tbl tr.checked:hover td{background:#dbeafe}
+.amt{font-weight:600}
+.amt.in{color:var(--in)} .amt.out{color:var(--out)}
+.dir-tag{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700}
+.dir-tag.in{color:var(--in)} .dir-tag.out{color:var(--out)}
+
+/* ===== 徽章 ===== */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:2.5px 9px;border-radius:99px;font-weight:600;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-wait{background:var(--warn-weak);color:var(--warn)}
+.b-pass{background:var(--ok-weak);color:var(--ok)}
+.b-low{background:#fff7ed;color:#c2410c}
+.b-err{background:var(--danger-weak);color:var(--danger)}
+.b-push{background:var(--brand-weak);color:var(--brand)}
+.b-reject{background:var(--neutral-weak);color:var(--neutral)}
+.b-doing{background:var(--info-weak);color:var(--info)}
+
+/* ===== 控件 ===== */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid transparent;transition:.12s}
+.btn-pri{background:var(--brand);color:#fff}
+.btn-pri:hover{background:var(--brand-2)}
+.btn-ok{background:var(--ok);color:#fff}.btn-ok:hover{background:#15803d}
+.btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
+.btn-ghost:hover{background:#f8fafc}
+.btn-danger{background:var(--danger-weak);color:var(--danger);border-color:#fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:7px}
+.link-btn{color:var(--brand);font-weight:600;font-size:12.5px;padding:4px 8px;border-radius:6px}
+.link-btn:hover{background:var(--brand-weak)}
+.input,.select{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);outline:none;min-width:130px}
+.input:focus,.select:focus{border-color:var(--brand);box-shadow:0 0 0 3px #2563eb22}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:#fff;min-width:230px}
+.search input{border:none;outline:none;padding:8px 0;flex:1}
+.search:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px #2563eb22}
+.search input:focus-visible{outline:none}
+.filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.filterbar .right{margin-left:auto;display:flex;gap:8px}
+
+/* checkbox */
+.ck{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.ck input{width:15px;height:15px;accent-color:var(--brand);cursor:pointer}
+
+/* ===== 交互状态：focus / active / disabled 统一约定 ===== */
+:where(button,a,label.ck,input,select,textarea):focus-visible{outline:2px solid var(--brand-2);outline-offset:2px;border-radius:8px}
+.side-nav :focus-visible{outline-color:#93c5fd}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+.btn-pri:active{background:#1e3a8a}
+.btn-ok:active{background:#166534}
+.btn-ghost:active{background:#eef2f7}
+.btn-danger:active{background:#fee2e2}
+.link-btn:active{background:#dbeafe}
+.tabs button:active,.icon-btn:active,.x:active{background:#e2e8f0}
+.nav-item:active{background:#ffffff1f}
+
+/* ===== 看板 tab ===== */
+.tabs{display:flex;gap:6px;background:#e8eef5;padding:4px;border-radius:10px;width:max-content;margin-bottom:18px}
+.tabs button{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-2);transition:.12s}
+.tabs button:hover{background:#ffffffcc;color:var(--ink)}
+.tabs button.active{background:#fff;color:var(--brand);box-shadow:var(--shadow)}
+.dash{display:none}
+.dash.on{display:block}
+
+/* ===== 图表 ===== */
+.chart{width:100%;height:auto}
+.donut-seg{transition:opacity .15s}
+.donut-seg:hover{opacity:.82;cursor:pointer}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.bar-m{display:flex;align-items:center;gap:10px;margin:9px 0}
+.bar-m .nm{width:110px;font-size:12.5px;color:var(--ink-2);flex-shrink:0}
+.bar-m .tr{flex:1;height:16px;background:#f1f5f9;border-radius:5px;overflow:hidden}
+.bar-m .tr i{display:block;height:100%;border-radius:5px}
+.bar-m .vv{width:150px;text-align:right;font-size:12.5px;color:var(--ink-2);flex-shrink:0}
+
+/* ===== 详情抽屉 ===== */
+#mask{position:fixed;inset:0;background:rgba(15,23,42,.38);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+#mask.on{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;right:-560px;width:560px;max-width:92vw;height:100%;background:#fff;z-index:50;transition:right .24s ease;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+#drawer.on{right:0}
+.dw-hd{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.dw-hd h3{font-size:16px;font-weight:700}
+.dw-hd .x{margin-left:auto;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.dw-hd .x:hover{background:var(--neutral-weak)}
+.dw-bd{flex:1;overflow:auto;padding:20px 22px}
+.dw-ft{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field .k{font-size:12px;color:var(--muted)}
+.field .v{font-size:14px;font-weight:550}
+.section-title{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.04em;margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.trace-list{display:flex;flex-direction:column;gap:0}
+.trace-item{display:flex;gap:12px;padding:10px 12px;border-radius:8px;background:#f8fafc;margin-bottom:6px}
+.trace-item .t{width:88px;font-size:12px;color:var(--muted);flex-shrink:0}
+.trace-item .c{font-size:13px}
+.audit{position:relative;padding-left:20px}
+.audit::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--line)}
+.audit .it{position:relative;padding:0 0 14px 4px}
+.audit .it::before{content:"";position:absolute;left:-17px;top:5px;width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid var(--brand)}
+.audit .it.reject::before{border-color:#94a3b8}
+.audit .it .who{font-size:13px;font-weight:600}
+.audit .it .act{font-size:12.5px;color:var(--ink-2);margin-top:1px}
+.audit .it .tm{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+/* ===== 弹窗 ===== */
+#modal-wrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60;background:rgba(15,23,42,.42)}
+#modal-wrap.on{display:flex}
+#modal{width:440px;max-width:92vw;background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden;animation:pop .16s ease}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.mo-hd{padding:18px 22px;display:flex;align-items:center;gap:10px}
+.mo-hd .ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mo-hd .ic.warn{background:var(--warn-weak);color:var(--warn)}
+.mo-hd .ic.ok{background:var(--ok-weak);color:var(--ok)}
+.mo-hd .ic.danger{background:var(--danger-weak);color:var(--danger)}
+.mo-hd h4{font-size:15.5px;font-weight:700}
+.mo-hd p{font-size:12.5px;color:var(--muted);margin-top:2px}
+.mo-bd{padding:6px 22px 4px;font-size:13.5px;color:var(--ink-2)}
+.mo-bd .sum{background:#f8fafc;border:1px solid var(--line-2);border-radius:9px;padding:12px 14px;margin:10px 0;font-size:13px}
+.mo-ft{padding:16px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-2)}
+textarea.field{width:100%;min-height:76px;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:13px;outline:none}
+
+/* toast */
+#toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:9px;font-size:13px;z-index:70;transition:.25s;display:flex;gap:8px;align-items:center;box-shadow:var(--shadow-lg)}
+#toast.on{transform:translateX(-50%) translateY(0)}
+
+.kpi-note{font-size:11.5px;color:var(--muted);text-align:right;margin-top:6px}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+.small-print{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.6}
+.tag-mini{font-size:10.5px;background:var(--neutral-weak);color:#475569;padding:1px 6px;border-radius:5px;margin-left:6px}
+.num{font-variant-numeric:tabular-nums}
+@media(max-width:1080px){.stat-row{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-2-1,.grid-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ===== 登录 ===== -->
+<div id="login">
+  <div class="login-box">
+    <div class="logo"><div class="mark">账</div><div><h1>财务流水自动入账</h1><div class="sub">数据中台 · 内网复核工作台（一期）</div></div></div>
+    <label>账号</label>
+    <input id="lg-user" placeholder="财务账号" value="caiwu.wang">
+    <label>密码</label>
+    <input id="lg-pass" type="password" placeholder="••••••••" value="123456">
+    <button class="login-btn" onclick="doLogin()">登 录</button>
+    <div class="secure-note"><span class="dot"></span> 内网隔离访问 · 仅财务账号可登录 · 操作全程留痕</div>
+  </div>
+</div>
+
+<!-- ===== 主应用 ===== -->
+<div id="app">
+  <aside id="sidebar">
+    <div class="side-head">
+      <div class="mark">账</div>
+      <div><b>财务流水自动入账</b><span>复核工作台 · 一期 MVP</span></div>
+    </div>
+    <nav class="side-nav">
+      <div class="nav-group">复核</div>
+      <button class="nav-item active" data-view="review"><span class="ico">✎</span>复核工作台 <span class="badge">27</span></button>
+      <div class="nav-group">可视化看板</div>
+      <button class="nav-item" data-view="dash" data-tab="overview"><span class="ico">▤</span>流水总览</button>
+      <button class="nav-item" data-view="dash" data-tab="bank"><span class="ico">◔</span>银行分布</button>
+      <button class="nav-item" data-view="dash" data-tab="alert"><span class="ico">⚠</span>异常预警 <span class="badge">8</span></button>
+      <button class="nav-item" data-view="dash" data-tab="recon"><span class="ico">⇄</span>对账钩稽</button>
+    </nav>
+    <div class="side-foot">
+      <div class="uid"><span class="avatar">王</span><div><div style="color:#e2e8f0">王小棵 · 财务</div><div>内网 · 财务专用网段</div></div></div>
+    </div>
+  </aside>
+
+  <div id="main">
+    <div id="topbar">
+      <div class="crumb"><span id="crumb">复核工作台</span><small id="crumb-sub">待复核队列 · 规则内自动通过，低置信/异常转人工</small></div>
+      <div class="right">
+        <span class="env-tag">Mock 数据源</span>
+        <button class="icon-btn" title="通知"><span class="dot"></span>🔔</button>
+        <span style="font-size:12px;color:var(--muted)">2026-09-06 09:42</span>
+      </div>
+    </div>
+
+    <div id="content">
+
+      <!-- 复核工作台 -->
+      <section class="view on" id="view-review">
+        <div class="stat-row">
+          <div class="stat"><div class="lbl">待复核</div><div class="val num" style="color:var(--warn)">27<span class="lbl" style="font-size:13px"> 笔</span></div><div class="delta">其中低置信 5 · 异常 8</div></div>
+          <div class="stat"><div class="lbl">今日已复核</div><div class="val num" style="color:var(--ok)">213<span style="font-size:13px"> 笔</span></div><div class="delta up">↑ 通过 196 · 驳回 17</div></div>
+          <div class="stat"><div class="lbl">今日已推送金蝶</div><div class="val num" style="color:var(--brand)">196<span style="font-size:13px"> 笔</span></div><div class="delta">凭证已生成 · 全部钩稽通过</div></div>
+          <div class="stat"><div class="lbl">复核准确率（近7日）</div><div class="val num">98.7<span style="font-size:13px">%</span></div><div class="delta up">↑ 0.4% 环比</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <h3>流水复核队列</h3><span class="sub">点击行查看详情；支持批量操作</span>
+            <div class="right">
+              <button class="btn btn-ghost btn-sm" onclick="toast('已刷新队列（Mock）')">↻ 刷新</button>
+              <button class="btn btn-pri btn-sm" id="btn-push" disabled title="请先勾选流水" onclick="openPush('batch')">推送金蝶</button>
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="filterbar">
+              <div class="search">🔍<input id="q-search" placeholder="流水号 / 对方户名 / 摘要" oninput="filterRows()"></div>
+              <select class="select" onchange="filterRows()" id="f-state"><option value="">全部状态</option><option value="待复核">待复核</option><option value="低置信">低置信</option><option value="异常">异常</option><option value="自动通过">自动通过</option></select>
+              <select class="select" onchange="filterRows()" id="f-bank"><option value="">全部银行</option><option>中信银行</option><option>招商银行</option></select>
+              <select class="select" onchange="filterRows()" id="f-acct"><option value="">全部账户</option><option>中信 · 基本户 1100</option><option>招商 · 一般户 2200</option><option>招商 · 专户 2300</option></select>
+              <input type="date" class="input" id="f-date" onchange="filterRows()">
+              <div class="right">
+                <label class="ck"><input type="checkbox" id="ck-all" onchange="toggleAll()">全选</label>
+                <button class="btn btn-ghost btn-sm" id="btn-reject" disabled title="请先勾选流水" onclick="rejectSel()">批量驳回</button>
+                <button class="btn btn-ok btn-sm" id="btn-pass" disabled title="请先勾选流水" onclick="passSel()">批量通过</button>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr>
+                  <th style="width:38px"></th><th>流水号</th><th>日期</th><th>借贷</th><th>金额</th><th>对方户名</th><th>账户</th><th>摘要</th><th>校验</th><th>复核状态</th><th style="width:88px">操作</th>
+                </tr></thead>
+                <tbody id="rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 看板 -->
+      <section class="view" id="view-dash">
+        <div class="tabs" id="dash-tabs">
+          <button class="active" data-tab="overview">流水总览</button>
+          <button data-tab="bank">银行分布</button>
+          <button data-tab="alert">异常预警</button>
+          <button data-tab="recon">对账钩稽</button>
+        </div>
+
+        <!-- 流水总览 -->
+        <div class="dash on" id="dash-overview">
+          <div class="stat-row">
+            <div class="stat gain"><div class="lbl">本期收入</div><div class="val num" style="color:var(--in)">¥ 8,426,500</div><div class="delta up">↑ 较上期 +12.4%</div><div class="strip"></div></div>
+            <div class="stat pay"><div class="lbl">本期支出</div><div class="val num" style="color:var(--out)">¥ 5,903,120</div><div class="delta down">↑ 较上期 +3.1%</div><div class="strip"></div></div>
+            <div class="stat net"><div class="lbl">净流入</div><div class="val num">¥ 2,523,380</div><div class="delta">净额 = 收 − 支</div><div class="strip"></div></div>
+            <div class="stat cnt"><div class="lbl">流水总笔数</div><div class="val num">1,284<span style="font-size:13px"> 笔</span></div><div class="delta">覆盖 ≥80% 流水</div><div class="strip"></div></div>
+          </div>
+          <div class="grid-2-1 mb16">
+            <div class="card">
+              <div class="card-hd"><h3>收支趋势</h3><span class="sub">按日聚合</span><div class="right"><select class="select" style="min-width:100px;padding:5px 10px"><option>近 14 天</option><option>近 30 天</option><option>本月</option></select></div></div>
+              <div class="card-bd" id="trend-panel"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><h3>账户收支构成</h3><span class="sub">金额 Top 5</span></div>
+              <div class="card-bd" id="acct-bars"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>账户流水明细</h3><span class="sub">本期聚合</span></div>
+            <div class="card-bd">
+              <table class="tbl">
+                <thead><tr><th>账户</th><th>银行</th><th>收入(元)</th><th>支出(元)</th><th>笔数</th><th>净额(元)</th></tr></thead>
+                <tbody>
+                  <tr><td>基本户 1100</td><td>中信银行</td><td class="amt in">5,120,400</td><td class="amt out">3,402,800</td><td>642</td><td class="amt">+1,717,600</td></tr>
+                  <tr><td>一般户 2200</td><td>招商银行</td><td class="amt in">2,150,900</td><td class="amt out">1,680,900</td><td>368</td><td class="amt">+470,000</td></tr>
+                  <tr><td>专户 2300</td><td>招商银行</td><td class="amt in">1,155,200</td><td class="amt out">819,420</td><td>274</td><td class="amt">+335,780</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 银行分布 -->
+        <div class="dash" id="dash-bank">
+          <div class="grid-2-1 mb16">
+            <div class="card">
+              <div class="card-hd"><h3>银行流水占比</h3><span class="sub">按金额</span></div>
+              <div class="card-bd" style="display:flex;align-items:center;gap:26px" id="bank-donut"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><h3>账户占比</h3><span class="sub">按金额 · 收付加权</span></div>
+              <div class="card-bd" id="bank-acct-bars"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>银行 / 账户分布明细</h3></div>
+            <div class="card-bd">
+              <table class="tbl">
+                <thead><tr><th>银行</th><th>账户</th><th>流水金额(元)</th><th>占比</th><th>笔数</th></tr></thead>
+                <tbody>
+                  <tr><td>中信银行</td><td>基本户 1100</td><td class="num">8,523,200</td><td>57.4%</td><td>642</td></tr>
+                  <tr><td rowspan="2">招商银行</td><td>一般户 2200</td><td class="num">3,831,800</td><td>25.8%</td><td>368</td></tr>
+                  <tr><td>专户 2300</td><td class="num">1,974,620</td><td>13.3%</td><td>274</td></tr>
+                  <tr style="background:#f8fafc"><td colspan="2"><b>合计</b></td><td class="num"><b>14,839,620</b></td><td><b>100%</b></td><td><b>1,284</b></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 异常预警 -->
+        <div class="dash" id="dash-alert">
+          <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
+            <div class="stat"><div class="lbl">异常合计</div><div class="val num" style="color:var(--danger)">8</div><div class="delta">需人工处理</div></div>
+            <div class="stat"><div class="lbl">重复流水</div><div class="val num" style="color:var(--danger)">3</div><div class="delta">高 · 可能重复入账</div></div>
+            <div class="stat"><div class="lbl">负金额</div><div class="val num" style="color:var(--warn)">2</div><div class="delta">中 · 冲正/退款待确认</div></div>
+            <div class="stat"><div class="lbl">缺字段 / 超阈值</div><div class="val num" style="color:var(--warn)">3</div><div class="delta">中 · 待补全核对</div></div>
+          </div>
+          <div class="card mb16">
+            <div class="card-hd"><h3>异常类型分布</h3><span class="sub">采集校验结果 · 按严重度</span></div>
+            <div class="card-bd" id="alert-bars"></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>异常流水清单</h3><span class="sub">点击「去复核」跳转复核详情</span></div>
+            <div class="card-bd">
+              <table class="tbl">
+                <thead><tr><th>严重度</th><th>类型</th><th>流水号</th><th>金额</th><th>账户</th><th>问题描述</th><th style="width:88px">操作</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="badge b-err">高</span></td><td>重复流水</td><td class="mono">ZX-2026-09-0142</td><td class="amt in">¥ 120,000</td><td>中信·1100</td><td>与流水 ZX-2026-09-0141 摘要、金额、对方户名完全一致，疑似重复上报</td><td><button class="link-btn" onclick="openDrawer(2)">去复核</button></td></tr>
+                  <tr><td><span class="badge b-err">高</span></td><td>重复流水</td><td class="mono">CMB-2026-09-0077</td><td class="amt out">¥ 88,000</td><td>招商·2200</td><td>同批次内 ID 重复</td><td><button class="link-btn" onclick="openDrawer(3)">去复核</button></td></tr>
+                  <tr><td><span class="badge b-low">中</span></td><td>负金额</td><td class="mono">ZX-2026-09-0211</td><td class="amt out">−¥ 4,200</td><td>中信·1100</td><td>金额为负，疑似冲正或退款</td><td><button class="link-btn" onclick="openDrawer(4)">去复核</button></td></tr>
+                  <tr><td><span class="badge b-low">中</span></td><td>超阈值</td><td class="mono">CMB-2026-09-0003</td><td class="amt in">¥ 2,300,000</td><td>招商·2300</td><td>单笔金额超过账户阈值 ¥500,000</td><td><button class="link-btn" onclick="openDrawer(5)">去复核</button></td></tr>
+                  <tr><td><span class="badge b-low">中</span></td><td>缺字段</td><td class="mono">ZX-2026-09-0330</td><td class="amt in">¥ 15,600</td><td>中信·1100</td><td>摘要字段缺失、对方户名不完整</td><td><button class="link-btn" onclick="openDrawer(6)">去复核</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 对账钩稽 -->
+        <div class="dash" id="dash-recon">
+          <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
+            <div class="stat"><div class="lbl">批次总数</div><div class="val num">18</div><div class="delta">近 7 天</div></div>
+            <div class="stat"><div class="lbl">对账一致</div><div class="val num" style="color:var(--ok)">16</div><div class="delta">笔数 + 金额全平</div></div>
+            <div class="stat"><div class="lbl">存在差异</div><div class="val num" style="color:var(--warn)">2</div><div class="delta">需核对</div></div>
+            <div class="stat"><div class="lbl">差异金额</div><div class="val num" style="color:var(--danger)">¥ 120,000</div><div class="delta">差额待追平</div></div>
+          </div>
+          <div class="card mb16">
+            <div class="card-hd"><h3>批次对账状态</h3><span class="sub">导入 vs 预期 · 笔数/金额勾稽</span></div>
+            <div class="card-bd">
+              <table class="tbl">
+                <thead><tr><th>批次号</th><th>来源</th><th>采集时间</th><th>导入笔数</th><th>导入金额(元)</th><th>预期笔数</th><th>预期金额(元)</th><th>笔差</th><th>额差</th><th>状态</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">B-20260906-01</td><td>中信 · 文件导入</td><td>09-06 08:12</td><td>208</td><td>2,840,120</td><td>208</td><td>2,840,120</td><td>0</td><td>¥0</td><td><span class="badge b-pass">一致</span></td></tr>
+                  <tr><td class="mono">B-20260906-02</td><td>招商 · Mock API</td><td>09-06 08:47</td><td>156</td><td>1,306,500</td><td>156</td><td>1,306,500</td><td>0</td><td>¥0</td><td><span class="badge b-pass">一致</span></td></tr>
+                  <tr><td class="mono">B-20260905-03</td><td>中信 · Mock API</td><td>09-05 21:30</td><td>231</td><td>3,102,400</td><td>231</td><td>3,102,400</td><td>0</td><td>¥0</td><td><span class="badge b-pass">一致</span></td></tr>
+                  <tr><td class="mono">B-20260905-04</td><td>招商 · 文件导入</td><td>09-05 18:05</td><td>142</td><td>1,120,000</td><td>144</td><td>1,240,000</td><td style="color:var(--danger)">−2</td><td style="color:var(--danger)">−¥120,000</td><td><span class="badge b-err">差异</span></td></tr>
+                  <tr><td class="mono">B-20260904-05</td><td>中信 · 文件导入</td><td>09-04 17:22</td><td>119</td><td>990,000</td><td>119</td><td>990,000</td><td>0</td><td>¥0</td><td><span class="badge b-pass">一致</span></td></tr>
+                </tbody>
+              </table>
+              <div class="small-print">※ 勾稽规则：导入笔数 / 金额须与「预期值」（银行侧对账单或契约校验基线）完全一致；不一致批次会被置顶并阻断批量推送。</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-hd"><h3>差异批次 · 明细跟踪</h3></div>
+              <div class="card-bd" id="recon-diff"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><h3>凭证 ↔ 流水 双向钩稽</h3><span class="sub">溯源一致性检查</span></div>
+              <div class="card-bd" id="vouch-trace"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- 详情抽屉 -->
+<div id="mask" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div class="dw-hd"><h3 id="dw-title">流水详情</h3><span id="dw-badge"></span><button class="x" onclick="closeDrawer()">✕</button></div>
+  <div class="dw-bd" id="dw-body"></div>
+  <div class="dw-ft">
+    <button class="btn btn-danger" onclick="rejectOne()">驳回</button>
+    <button class="btn btn-ghost" onclick="closeDrawer()">取消</button>
+    <button class="btn btn-ok" onclick="passOne()">通过并入账</button>
+    <button class="btn btn-pri" onclick="openPush('single')">推送金蝶</button>
+  </div>
+</div>
+
+<!-- 弹窗 -->
+<div id="modal-wrap">
+  <div id="modal">
+    <div class="mo-hd"><div class="ic" id="mo-ic">✓</div><div><h4 id="mo-title">确认</h4><p id="mo-sub"></p></div></div>
+    <div class="mo-bd" id="mo-body"></div>
+    <div class="mo-ft" id="mo-ft"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ===== 模拟数据 ===== */
+const ROWS=[
+ {id:1,no:"ZX-2026-09-0141",date:"2026-09-06",dir:"in",amt:"120,000.00",name:"XX 科技有限公司",acct:"中信 · 1100",memo:"货款回款",check:"自动通过",state:"待复核",bank:"中信银行",batch:"B-20260906-01",rec:"ZX202609060141"},
+ {id:2,no:"ZX-2026-09-0142",date:"2026-09-06",dir:"in",amt:"120,000.00",name:"XX 科技有限公司",acct:"中信 · 1100",memo:"货款回款",check:"重复流水",state:"异常",bank:"中信银行",batch:"B-20260906-01",rec:"ZX202609060142"},
+ {id:3,no:"CMB-2026-09-0077",date:"2026-09-06",dir:"out",amt:"88,000.00",name:"YY 供应商",acct:"招商 · 2200",memo:"采购付款",check:"重复ID",state:"异常",bank:"招商银行",batch:"B-20260906-02",rec:"CMB202609060077"},
+ {id:4,no:"ZX-2026-09-0211",date:"2026-09-06",dir:"out",amt:"4,200.00",name:"退款",acct:"中信 · 1100",memo:"冲正/退款",check:"负金额",state:"低置信",bank:"中信银行",batch:"B-20260906-01",rec:"ZX202609060211"},
+ {id:5,no:"CMB-2026-09-0003",date:"2026-09-05",dir:"in",amt:"2,300,000.00",name:"ZZ 投资有限公司",acct:"招商 · 2300",memo:"注资",check:"超阈值",state:"低置信",bank:"招商银行",batch:"B-20260905-04",rec:"CMB202609050003"},
+ {id:6,no:"ZX-2026-09-0330",date:"2026-09-05",dir:"in",amt:"15,600.00",name:"（缺失）",acct:"中信 · 1100",memo:"",check:"缺字段",state:"低置信",bank:"中信银行",batch:"B-20260906-01",rec:"ZX202609050330"},
+ {id:7,no:"CMB-2026-09-0088",date:"2026-09-05",dir:"in",amt:"320,000.00",name:"WW 股份",acct:"招商 · 2200",memo:"服务费收入",check:"自动通过",state:"自动通过",bank:"招商银行",batch:"B-20260905-03",rec:"CMB202609050088"},
+ {id:8,no:"ZX-2026-09-0056",date:"2026-09-05",dir:"out",amt:"56,800.00",name:"UU 物流",acct:"中信 · 1100",memo:"物流费",check:"自动通过",state:"待复核",bank:"中信银行",batch:"B-20260905-03",rec:"ZX202609050056"},
+];
+let selected=new Set(); let currentId=null;
+
+const stateMeta={ "待复核":["b-wait","待复核"],"自动通过":["b-pass","自动通过"],"低置信":["b-low","低置信"],"异常":["b-err","异常"],"已推送":["b-push","已推送"],"已驳回":["b-reject","已驳回"] };
+
+function fmtDir(d){return d==="in"?'<span class="dir-tag in">收 ▲</span>':'<span class="dir-tag out">支 ▼</span>'}
+function fmtAmt(d,a){const c=d==="in"?"in":"out";const s=d==="in"?"+":"−";return `<span class="amt ${c}">${s}¥ ${a}</span>`}
+function stateBadge(s){const[cls,txt]=stateMeta[s]||["b-wait",s];return `<span class="badge ${cls}">${txt}</span>`}
+
+function renderRows(){
+  const tbody=document.getElementById("rows");
+  const q=(document.getElementById("q-search").value||"").trim();
+  const fs=document.getElementById("f-state").value;
+  const fb=document.getElementById("f-bank").value;
+  const fa=document.getElementById("f-acct").value;
+  const fd=document.getElementById("f-date").value;
+  const list=ROWS.filter(r=>{
+    if(q&&!(r.no+r.name+r.memo).includes(q))return false;
+    if(fs&&r.state!==fs)return false;
+    if(fb&&r.bank!==fb)return false;
+    if(fa&&!(`· ${r.acct.split(" · ")[1]}`&&fa.includes(r.acct.split(" · ")[1])))return false;
+    if(fa&&!fa.includes(r.acct.split(" · ")[1]))return false;
+    if(fd&&r.date!==fd)return false;
+    return true;
+  });
+  tbody.innerHTML=list.map(r=>`
+    <tr class="${selected.has(r.id)?'checked':''}" onclick="toggleRow(${r.id},event)">
+      <td onclick="event.stopPropagation()"><label class="ck"><input type="checkbox" ${selected.has(r.id)?'checked':''} onclick="toggleRow(${r.id},event)"></label></td>
+      <td class="mono">${r.no}</td>
+      <td class="num">${r.date}</td>
+      <td>${fmtDir(r.dir)}</td>
+      <td>${fmtAmt(r.dir,r.amt)}</td>
+      <td>${r.name}</td>
+      <td>${r.acct}</td>
+      <td>${r.memo||'<span style="color:var(--muted)">—</span>'}</td>
+      <td>${r.check==="自动通过"?'<span style="color:var(--ok)">✓ 通过</span>':`<span style="color:var(--danger)">⚠ ${r.check}</span>`}</td>
+      <td>${stateBadge(r.state)}</td>
+      <td><button class="link-btn" onclick="event.stopPropagation();openDrawer(${r.id})">详情</button></td>
+    </tr>`).join('');
+  document.getElementById("ck-all").checked=list.length>0&&list.every(r=>selected.has(r.id));
+  updateBatchBtns();
+}
+function filterRows(){renderRows()}
+function updateBatchBtns(){const n=selected.size;["btn-push","btn-reject","btn-pass"].forEach(x=>{const b=document.getElementById(x);if(b)b.disabled=n===0})}
+function toggleAll(){const ck=document.getElementById("ck-all").checked;const q=visibleIds();if(ck)q.forEach(id=>selected.add(id));else q.forEach(id=>selected.delete(id));renderRows()}
+function visibleIds(){const tbody=document.getElementById("rows");const q=(document.getElementById("q-search").value||"").trim();const fs=document.getElementById("f-state").value;const fb=document.getElementById("f-bank").value;const fa=document.getElementById("f-acct").value;const fd=document.getElementById("f-date").value;return ROWS.filter(r=>{if(q&&!(r.no+r.name+r.memo).includes(q))return false;if(fs&&r.state!==fs)return false;if(fb&&r.bank!==fb)return false;if(fa&&!fa.includes(r.acct.split(" · ")[1]))return false;if(fd&&r.date!==fd)return false;return true}).map(r=>r.id)}
+function toggleRow(id,ev){if(ev&&ev.target.tagName==="INPUT"){selected.has(id)?selected.delete(id):selected.add(id);}else{selected.has(id)?selected.delete(id):selected.add(id);}renderRows()}
+
+/* ===== 详情 ===== */
+function openDrawer(id){const r=ROWS.find(x=>x.id===id);if(!r)return;currentId=id;
+  document.getElementById("dw-title").textContent=r.no;
+  document.getElementById("dw-badge").innerHTML=stateBadge(r.state);
+  document.getElementById("dw-body").innerHTML=`
+    <div class="section-title">契约字段 · 统一流水契约</div>
+    <div class="field-grid">
+      <div class="field"><span class="k">唯一流水号</span><span class="v mono">${r.rec}</span></div>
+      <div class="field"><span class="k">交易日期</span><span class="v">${r.date}</span></div>
+      <div class="field"><span class="k">借贷方向</span><span class="v">${r.dir==='in'?'收（贷）':'付（借）'}</span></div>
+      <div class="field"><span class="k">金额</span><span class="v ${r.dir==='in'?'amt in':'amt out'}">¥ ${r.amt}</span></div>
+      <div class="field"><span class="k">对方户名</span><span class="v">${r.name}</span></div>
+      <div class="field"><span class="k">账户</span><span class="v">${r.acct}</span></div>
+      <div class="field"><span class="k">币种</span><span class="v">CNY</span></div>
+      <div class="field"><span class="k">摘要</span><span class="v">${r.memo||'<span style="color:var(--muted)">缺失</span>'}</span></div>
+    </div>
+
+    <div class="section-title">校验结果</div>
+    <div class="trace-item"><span class="t">校验状态</span><span class="c">${r.check==="自动通过"?'<span style="color:var(--ok)">✓ 规则内通过</span>':`<span style="color:var(--danger)">⚠ ${r.check}</span>`}</span></div>
+    <div class="trace-item"><span class="t">复核规则</span><span class="c">${r.check==="自动通过"?'满足全部规则，可直接入账':'低置信 / 异常，需人工确认'}</span></div>
+
+    <div class="section-title">数据溯源</div>
+    <div class="trace-list">
+      <div class="trace-item"><span class="t">来源银行</span><span class="c">${r.bank}</span></div>
+      <div class="trace-item"><span class="t">来源账户</span><span class="c">${r.acct}</span></div>
+      <div class="trace-item"><span class="t">采集批次</span><span class="c mono">${r.batch} <span class="tag-mini">文件导入/Mock</span></span></div>
+      <div class="trace-item"><span class="t">记录 ID</span><span class="c mono">${r.rec}</span></div>
+    </div>
+
+    <div class="section-title">操作留痕 · 审计日志</div>
+    <div class="audit">
+      <div class="it"><div class="who">系统</div><div class="act">采集落库 · 校验预筛：${r.check}</div><div class="tm">2026-09-06 08:12 · 批次 ${r.batch}</div></div>
+      <div class="it"><div class="who">王小棵（财务）</div><div class="act">打开详情查看</div><div class="tm">2026-09-06 09:40</div></div>
+    </div>`;
+  document.getElementById("mask").classList.add("on");
+  document.getElementById("drawer").classList.add("on");
+}
+function closeDrawer(){document.getElementById("mask").classList.remove("on");document.getElementById("drawer").classList.remove("on")}
+
+/* ===== 弹窗 ===== */
+function openModal({icon,title,sub,body,actions}){
+  const ic=document.getElementById("mo-ic");ic.className="ic "+icon;
+  // set icon glyph
+  const glyphs={warn:"⚠",ok:"✓",danger:"!"};
+  ic.innerHTML=glyphs[icon]||"✓";
+  document.getElementById("mo-title").textContent=title;
+  document.getElementById("mo-sub").textContent=sub||"";
+  document.getElementById("mo-body").innerHTML=body||"";
+  document.getElementById("mo-ft").innerHTML=actions;
+  document.getElementById("modal-wrap").classList.add("on");
+}
+function closeModal(){document.getElementById("modal-wrap").classList.remove("on")}
+function confirmPush(ids){const n=ids.length;const amt=ROWS.filter(r=>ids.includes(r.id)).reduce((s,r)=>s+parseFloat(r.amt.replace(/,/g,"")),0).toLocaleString("zh-CN",{minimumFractionDigits:2});
+  openModal({icon:"warn",title:"确认推送金蝶",sub:"该操作为不可逆入账动作",body:`即将推送 <b>${n}</b> 笔流水至金蝶云星空并自动制证，合计金额 <b>¥ ${amt}</b>。<br><br><div class="sum">对账钩稽：全部通过 ▸ 可推送<br>推送后生成凭证号并回写溯源关联</div>`,
+  actions:`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-pri" onclick="doPush(${n})">确认推送</button>`})}
+function openPush(mode){if(mode==='batch'){const s=[...selected];if(!s.length)return toast('请先勾选要推送的流水');confirmPush(s)}else confirmPush([currentId])}
+function doPush(n){closeModal();toast(`已推送 ${n} 笔至金蝶 · 凭证已生成并回写溯源`)}
+function passSel(){const s=[...selected];if(!s.length)return toast('请先勾选要通过的流水');openModal({icon:"ok",title:`批量通过 ${s.length} 笔`,body:`将 <b>${s.length}</b> 笔标记为「复核通过」并入账队列。`,actions:`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-ok" onclick="closeModal();toast('已通过 ${s.length} 笔')">确认通过</button>`})}
+function rejectSel(){const s=[...selected];if(!s.length)return toast('请先勾选要驳回的流水');openModal({icon:"danger",title:`批量驳回 ${s.length} 笔`,body:`请填写驳回原因（必填，用于审计留痕）：<textarea class="field" placeholder="驳回原因"></textarea>`,actions:`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="closeModal();toast('已驳回 ${s.length} 笔')">确认驳回</button>`})}
+function passOne(){closeDrawer();toast('该笔已复核通过')}
+function rejectOne(){closeDrawer();openModal({icon:"danger",title:"驳回该笔流水",body:`请填写驳回原因（必填）：<textarea class="field" placeholder="驳回原因"></textarea>`,actions:`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="closeModal();toast('已驳回')">确认驳回</button>`})}
+
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");clearTimeout(window.__tt);window.__tt=setTimeout(()=>t.classList.remove("on"),2200)}
+
+/* ===== 导航 ===== */
+function setView(v,tab){
+  document.querySelectorAll(".view").forEach(e=>e.classList.remove("on"));
+  if(v==="review"){document.getElementById("view-review").classList.add("on");document.getElementById("crumb").textContent="复核工作台";document.getElementById("crumb-sub").textContent="待复核队列 · 规则内自动通过，低置信/异常转人工"}
+  else{document.getElementById("view-dash").classList.add("on");
+    const names={overview:"流水总览",bank:"银行分布",alert:"异常预警",recon:"对账钩稽"};
+    document.getElementById("crumb").textContent="可视化看板 · "+names[tab];
+    document.getElementById("crumb-sub").textContent="MVP 四看板 · 自研轻量定制 · 取数可信";
+    setDash(tab);
+  }
+}
+function setDash(tab){document.querySelectorAll("#dash-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));document.querySelectorAll(".dash").forEach(d=>d.classList.remove("on"));document.getElementById("dash-"+tab).classList.add("on")}
+
+document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  setView(b.dataset.view,b.dataset.tab||"overview");
+}));
+document.querySelectorAll("#dash-tabs button").forEach(b=>b.addEventListener("click",()=>setDash(b.dataset.tab)));
+
+/* ===== 登录 ===== */
+function doLogin(){document.getElementById("login").style.display="none";const a=document.getElementById("app");a.classList.add("on");renderRows();drawTrend();drawAcctBars();drawBankDonut();drawBankAcctBars();drawAlertBars();drawReconDiff();drawVouchTrace()}
+
+/* ===== 图表绘制 ===== */
+function drawTrend(){
+  const w=560,h=240,p=32,pl=26,pb=26;
+  const data1=[46,52,50,58,62,60,68,72,70,78,82,80,86,92];
+  const data2=[38,40,42,44,40,46,48,50,52,50,56,58,54,60];
+  const max=100;
+  function x(i){return pl+i*(w-pl-p)/(data1.length-1)}
+  function y(v){return h-pb-(v/max)*(h-pb-p)}
+  function path(arr){return arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ')}
+  function area(arr){return 'M'+x(0).toFixed(1)+' '+(h-pb)+' '+arr.map((v,i)=>'L'+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ')+` L${x(arr.length-1).toFixed(1)} ${h-pb} Z`}
+  const grid=[0,25,50,75,100].map(g=>`<line x1="${pl}" y1="${y(g)}" x2="${w-p}" y2="${y(g)}" stroke="#eef2f7"/><text x="${pl-8}" y="${y(g)+4}" font-size="10" fill="#94a3b8" text-anchor="end">${g}</text>`).join('');
+  const dates=['8/24','8/26','8/28','8/30','9/1','9/3','9/5'];
+  const labels=dates.map((d,i)=>{const idx=Math.round(i*(data1.length-1)/(dates.length-1));return `<text x="${x(idx)}" y="${h-8}" font-size="10" fill="#94a3b8" text-anchor="middle">${d}</text>`}).join('');
+  document.getElementById("trend-panel").innerHTML=`
+    <div class="legend" style="margin-bottom:14px"><span><i style="background:var(--in)"></i>收入（收）</span><span><i style="background:var(--out)"></i>支出（付）</span></div>
+    <svg viewBox="0 0 ${w} ${h}" class="chart">
+      ${grid}
+      <path d="${area(data1)}" fill="#05966918"/>
+      <path d="${area(data2)}" fill="#dc262612"/>
+      <path d="${path(data2)}" stroke="#dc2626" stroke-width="2.2" fill="none"/>
+      <path d="${path(data1)}" stroke="#059669" stroke-width="2.2" fill="none"/>
+      ${labels}
+    </svg>`;
+}
+function drawAcctBars(){
+  const rows=[["中信 · 基本户 1100",84,30,"#2563eb"],["招商 · 一般户 2200",42,18,"#0e7490"],["招商 · 专户 2300",28,12,"#6366f1"],["中信 · 承兑户 1200",16,8,"#94a3b8"]];
+  document.getElementById("acct-bars").innerHTML=rows.map(([n,v,_,c])=>`
+    <div class="bar-m"><div class="nm">${n}</div><div class="tr"><i style="width:${v}%;background:${c}"></i></div><div class="vv mono">¥ ${(v*100000).toLocaleString()}</div></div>`).join('')+
+    `<div class="legend" style="margin-top:12px"><span><i style="background:#2563eb"></i>中信</span><span><i style="background:#0e7490"></i>招商</span></div>`;
+}
+function drawBankDonut(){
+  const segs=[["中信银行",57.4,"#2563eb"],["招商银行",42.6,"#0e7490"]];
+  const total=100;let off=0;
+  const circles=segs.map(([n,v,c])=>{const dash=(v/total)*100;const s=`<circle class="donut-seg" r="70" cx="110" cy="110" fill="none" stroke="${c}" stroke-width="34" stroke-dasharray="${dash} ${100-dash}" stroke-dashoffset="${-off}" transform="rotate(-90 110 110)"><title>${n} · ${v}%</title></circle>`;off+=dash;return s}).join('');
+  document.getElementById("bank-donut").innerHTML=`
+    <svg width="220" height="240" viewBox="0 0 220 240">${circles}<text x="110" y="106" font-size="13" fill="#64748b" text-anchor="middle">总流水</text><text x="110" y="132" font-size="22" font-weight="700" fill="#0f172a" text-anchor="middle" class="mono">¥14.8M</text></svg>
+    <div style="flex:1"><div class="legend" style="flex-direction:column;gap:10px;display:flex">
+      ${segs.map(([n,v,c])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2)"><span class="legend"><i style="background:${c}"></i>${n}</span><b class="mono">${v}%</b></div>`).join('')}
+    </div></div>`;
+}
+function drawBankAcctBars(){
+  const rows=[["中信 · 基本户 1100",57,"#2563eb"],["招商 · 一般户 2200",26,"#0e7490"],["招商 · 专户 2300",13,"#6366f1"],["中信 · 承兑户 1200",4,"#94a3b8"]];
+  document.getElementById("bank-acct-bars").innerHTML=rows.map(([n,v,c])=>`<div class="bar-m"><div class="nm">${n}</div><div class="tr"><i style="width:${v}%;background:${c}"></i></div><div class="vv mono">${v}%</div></div>`).join('');
+}
+function drawAlertBars(){
+  const rows=[["重复流水",3,"高",24,"#dc2626"],["负金额",2,"中",16,"#f59e0b"],["超阈值",2,"中",16,"#f97316"],["缺字段",1,"中",8,"#f59e0b"]];
+  document.getElementById("alert-bars").innerHTML=rows.map(([n,c,sev,v,col])=>`<div class="bar-m"><div class="nm">${n}<span class="tag-mini">${sev}</span></div><div class="tr"><i style="width:${v*3.4}%;background:${col}"></i></div><div class="vv mono">${c} 笔</div></div>`).join('');
+}
+function drawReconDiff(){
+  document.getElementById("recon-diff").innerHTML=`
+    <div class="trace-item"><span class="t">批次</span><span class="c mono">B-20260905-04（招商 · 文件导入）</span></div>
+    <div class="trace-item"><span class="t">笔数差</span><span class="c" style="color:var(--danger)">−2 笔（导入 142 / 预期 144）</span></div>
+    <div class="trace-item"><span class="t">金额差</span><span class="c" style="color:var(--danger)">−¥120,000</span></div>
+    <div class="trace-item"><span class="t">疑似</span><span class="c">2 笔大额流水未成功导入或漏导</span></div>
+    <div class="trace-item"><span class="t">建议</span><span class="c">核对源文件 → 重新导入 → 再次勾稽</span></div>`;
+}
+function drawVouchTrace(){
+  document.getElementById("vouch-trace").innerHTML=`
+    <div class="trace-item"><span class="t">抽查凭证</span><span class="c mono">记-2026-09-0142 → 流水 ZX-2026-09-0142</span></div>
+    <div class="trace-item"><span class="t">正向追溯</span><span class="c" style="color:var(--ok)">凭证 → 流水 ✓ 可回查</span></div>
+    <div class="trace-item"><span class="t">反向追溯</span><span class="c" style="color:var(--ok)">流水 → 凭证 ✓ 可回查</span></div>
+    <div class="trace-item"><span class="t">钩稽一致性</span><span class="c" style="color:var(--ok)">双向一致，无孤儿凭证</span></div>`;
+}
+
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeDrawer();closeModal()}});
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财务流水自动入账 · 一期 MVP 演示</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --line:#334155; --ink:#e2e8f0; --muted:#94a3b8;
+    --acc:#38bdf8; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; --grn:#4ade80;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;padding:24px}
+  header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+  h1{font-size:20px}
+  header small{color:var(--muted);font-weight:400}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+  button{background:linear-gradient(180deg,#2666c6,#1d4fa0);color:#fff;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+  button:hover{filter:brightness(1.1)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .pipe{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .node{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;position:relative}
+  .node h3{font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+  .dot.on{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+  .node .stat{font-size:26px;font-weight:700}
+  .node .lbl{color:var(--muted);font-size:12px}
+  .stepbar{display:flex;gap:6px;margin-bottom:6px}
+  .stepbar button{flex:1;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+  .stepbar button.act{background:linear-gradient(180deg,#2666c6,#1d4fa0);color:#fff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+  .card h2{font-size:15px;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  .tag{padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600}
+  .tag.valid{background:rgba(34,197,94,.15);color:var(--ok)}
+  .tag.abnormal{background:rgba(239,68,68,.15);color:var(--err)}
+  .tag.reviewed{background:rgba(56,189,248,.15);color:var(--acc)}
+  .tag.pushed{background:rgba(74,222,128,.18);color:var(--grn)}
+  .num{font-variant-numeric:tabular-nums}
+  .flowline{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin:10px 0}
+  .flowline .arr{color:var(--acc);font-weight:700}
+  .log{max-height:220px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+  .log div{display:flex;gap:10px;border-bottom:1px dashed var(--line);padding:4px 0;color:var(--muted)}
+  .log .t{color:var(--acc);flex:none}
+  .empty{color:var(--muted);padding:12px;text-align:center}
+  @media(max-width:900px){.pipe{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>财务流水自动入账 · 一期 MVP 演示 <small>测试银行 → 数据中台 → 测试金蝶</small></h1>
+  <div class="toolbar">
+    <button id="b1" onclick="run('collect')">① 采集&校验（银行→中台）</button>
+    <button id="b2" disabled onclick="run('review')">② 人工复核通过</button>
+    <button id="b3" disabled onclick="run('push')">③ 一键推送金蝶制证</button>
+    <button id="b4" onclick="refreshAll()">↻ 刷新</button>
+  </div>
+</header>
+
+<!-- 四个数据流通节点总览 -->
+<div class="pipe">
+  <div class="node"><h3><span class="dot" id="d1"></span>测试银行</h3><div class="stat num" id="bankN">—</div><div class="lbl">模拟银行 API 原始流水</div></div>
+  <div class="node"><h3><span class="dot" id="d2"></span>数据中台</h3><div class="stat num" id="midN">—</div><div class="lbl">独立 MySQL · 校验/留痕</div></div>
+  <div class="node"><h3><span class="dot" id="d3"></span>复核工作台</h3><div class="stat num" id="revN">—</div><div class="lbl">human-in-the-loop 兜底</div></div>
+  <div class="node"><h3><span class="dot" id="d4"></span>测试金蝶</h3><div class="stat num" id="kdN">—</div><div class="lbl">生成凭证 · 双向可溯</div></div>
+</div>
+
+<div class="flowline"><span class="arr">◀</span> 数据从左侧一路流到右侧，每步可回查</div>
+
+<!-- 分步明细 Tab -->
+<div class="stepbar">
+  <button id="tab-raw" class="act" onclick="tab('raw')">原始流水</button>
+  <button id="tab-mid" onclick="tab('mid')">中台落库&amp;校验</button>
+  <button id="tab-audit" onclick="tab('audit')">复核 &amp; 推送留痕</button>
+  <button id="tab-kd" onclick="tab('kd')">金蝶凭证</button>
+  <button id="tab-trace" onclick="tab('trace')">溯源 &amp; 审计</button>
+</div>
+
+<div class="card" id="pane-raw">
+  <h2>测试银行返回的原始流水（模拟网银/银企直联）</h2>
+  <div id="rawBody"><div class="empty">点击「① 采集&amp;校验」从测试银行拉取</div></div>
+</div>
+<div class="card" id="pane-mid" style="display:none">
+  <h2>中台落库结果（含校验拦截）</h2>
+  <div id="midBody"></div>
+</div>
+<div class="card" id="pane-audit" style="display:none">
+  <h2>复核留痕（谁 / 何时 / 哪笔 / 操作）</h2>
+  <div id="reviewBody"></div>
+</div>
+<div class="card" id="pane-kd" style="display:none">
+  <h2>金蝶已生成凭证（OpeAPI 回显）</h2>
+  <div id="kdBody"></div>
+</div>
+<div class="card" id="pane-trace" style="display:none">
+  <h2>溯源 &amp; 审计</h2>
+  <div style="margin-bottom:10px;display:flex;gap:8px">
+    <input id="q" placeholder="输入凭证号 / 流水号 / 摘要 回查" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:#0b1220;color:var(--ink)">
+    <button onclick="searchTrace()">溯源查询</button>
+  </div>
+  <div id="traceBody"></div>
+  <h2 style="margin-top:16px">审计日志（只追加）</h2>
+  <div class="log" id="auditBody"></div>
+</div>
+
+<script>
+const api = (p, o) => fetch(p, o||{}).then(r=>r.json());
+
+function money(n){ return (n==null?'—':Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2, maximumFractionDigits:2})); }
+
+async function refreshHotel(){
+  const [bank, stats, kd] = await Promise.all([
+    api('/api/bankStatus').catch(()=>({ok:true,count:-1})),
+    api('/api/stats').catch(()=>({ok:true})),
+    api('/api/kingdee/vouchers').catch(()=>({ok:true,issued:[]})),
+  ]);
+  document.getElementById('bankN').textContent = bank.count<0?'—':bank.count;
+  document.getElementById('midN').textContent = stats.tx? stats.tx.c : '—';
+  document.getElementById('revN').textContent = stats.tx? (+stats.tx.reviewed + +stats.tx.pushed) : '—';
+  document.getElementById('kdN').textContent = Array.isArray(kd.issued)? kd.issued.length : '—';
+  document.getElementById('d1').classList.toggle('on', bank.count>0);
+  document.getElementById('d2').classList.toggle('on', stats.tx && +stats.tx.c>0);
+  document.getElementById('d3').classList.toggle('on', stats.tx && (+stats.tx.reviewed>0 || +stats.tx.pushed>0));
+  document.getElementById('d4').classList.toggle('on', Array.isArray(kd.issued) && kd.issued.length>0);
+}
+
+function statusTag(s){
+  const map={valid:['valid','✔ 有效'],abnormal:['abnormal','✕ 异常'],collected:['valid','已落库'],reviewed:['reviewed','已复核'],pushed:['pushed','已推送']};
+  const [c,t]=map[s]||['valid',s]; return '<span class="tag '+c+'">'+t+'</span>';
+}
+
+async function loadTabs(){
+  // raw = 未采集显示提示，采集后显示 transactions
+  let bankText='<div class="empty">点击「① 采集&校验」从测试银行拉取</div>';
+  try{
+    const bank=await api('/api/bank');
+    if(bank && bank.items){
+      bankText='<table><tr><th>银行</th><th>账户</th><th>日期</th><th class="num">金额</th><th>方向</th><th>对方户名</th><th>摘要</th><th>流水号</th></tr>'+
+        bank.items.map(r=>'<tr><td>'+r.bank+'</td><td>'+r.account+'</td><td>'+r.date+'</td><td class="num '+(r.amount>0?'':'')+'">'+money(r.amount)+'</td><td>'+(r.dir==='in'?'收':'付')+'</td><td>'+(r.counterparty||'<span style="color:var(--err)">(缺失)</span>')+'</td><td>'+(r.memo||'')+'</td><td class="num">'+r.uniqueNo+'</td></tr>').join('')+'</table>';
+    }
+  }catch(e){}
+  document.getElementById('rawBody').innerHTML=bankText;
+
+  const tx=await api('/api/transactions').catch(()=>({ok:false}));
+  document.getElementById('midBody').innerHTML = (tx&&tx.items&&tx.items.length)?
+    '<table><tr><th>批次</th><th>流水号</th><th>日期</th><th class="num">金额</th><th>方向</th><th>对方户名</th><th>校验</th></tr>'+
+    tx.items.map(r=>'<tr><td class="num">'+r.batch_id.replace('demo-batch-','')+'</td><td class="num">'+r.unique_no+'</td><td>'+r.tran_date+'</td><td class="num">'+money(r.amount)+'</td><td>'+(r.direction==='in'?'收':'付')+'</td><td>'+(r.counterparty||'—')+'</td><td>'+statusTag(r.status)+'</td></tr>').join('')+'</table>'
+    : '<div class="empty">尚未采集，流水未进入中台</div>';
+
+  const kd=await api('/api/kingdee/vouchers').catch(()=>({ok:false}));
+  document.getElementById('kdBody').innerHTML = (kd&&kd.issued&&kd.issued.length)?
+    '<table><tr><th>凭证号</th><th>流水号</th><th>摘要</th><th>复核人</th></tr>'+
+    kd.issued.map(v=>'<tr><td class="num">'+v.voucherNo+'</td><td class="num">'+v.uniqueNo+'</td><td>'+(v.memo||'')+'</td><td>'+(v.auditor||'')+'</td></tr>').join('')+'</table>'
+    : '<div class="empty">尚未推送，金蝶无凭证</div>';
+
+  loadAudit(); loadReview();
+}
+
+async function loadReview(){
+  const tx=await api('/api/transactions').catch(()=>({ok:false}));
+  const rows = tx&&tx.items? tx.items.filter(r=>r.status==='reviewed'||r.status==='pushed'):[];
+  document.getElementById('reviewBody').innerHTML = rows.length?
+    '<table><tr><th>流水号</th><th>状态</th><th>复核人</th></tr>'+
+    rows.map(r=>'<tr><td class="num">'+r.unique_no+'</td><td>'+statusTag(r.status)+'</td><td>'+(r.batch_id?'cnxiao':'')+'</td></tr>').join('')+'</table>'
+    : '<div class="empty">尚未复核</div>';
+}
+
+async function loadAudit(){
+  const a=await api('/api/audit').catch(()=>({ok:false,items:[]}));
+  document.getElementById('auditBody').innerHTML = (a&&a.items)?
+    a.items.map(x=>'<div><span class="t">'+x.created_at+'</span><span>['+x.action+']</span><span>'+x.detail+'</span></div>').join('')
+    : '<div class="empty">暂无审计</div>';
+}
+
+async function searchTrace(){
+  const q=document.getElementById('q').value.trim();
+  const tr=await api('/api/trace?q='+encodeURIComponent(q)).catch(()=>({ok:false,items:[]}));
+  document.getElementById('traceBody').innerHTML = (tr&&tr.items&&tr.items.length)?
+    '<table><tr><th>流水号</th><th>凭证号</th><th>推送时间</th></tr>'+
+    tr.items.map(x=>'<tr><td class="num">'+x.unique_no+'</td><td class="num">'+x.voucher_no+'</td><td>'+x.pushed_at+'</td></tr>').join('')+'</table>'
+    : '<div class="empty">无匹配（可先完成 ①②③ 步骤）</div>';
+}
+
+async function run(step){
+  const btn={collect:'b1',review:'b2',push:'b3'};
+  document.getElementById(btn[step]).disabled=true;
+  try{
+    if(step==='collect') await api('/api/collect',{method:'POST'});
+    if(step==='review'){ await api('/api/review',{method:'POST'}); }
+    if(step==='push') await api('/api/push',{method:'POST'});
+  }catch(e){ alert('操作失败：'+e.message); }
+  if(step==='collect'){ document.getElementById('b2').disabled=false; }
+  if(step==='review'){ document.getElementById('b3').disabled=false; }
+  document.getElementById(btn[step]).disabled=false;
+  await refresh69(); await loadTabs(); // refresh state
+}
+
+function refresh69(){ return refreshHotel(); }
+async function refreshAll(){ await refreshHotel(); await loadTabs(); await searchTrace(); }
+
+function tab(name){
+  ['raw','mid','audit','kd','trace'].forEach(n=>{
+    document.getElementById('pane-'+n).style.display = n===name?'':'none';
+    document.getElementById('tab-'+n).classList.toggle('act', n===name);
+  });
+  if(name==='trace') searchTrace();
+}
+
+refreshAll();
+</script>
+</body>
+</html>

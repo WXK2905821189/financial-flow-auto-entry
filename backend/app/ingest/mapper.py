@@ -13,11 +13,8 @@ import re
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.contract import BankTransaction
+from app.core.contract import AUTO_SUBJECT_KEY, BankTransaction
 from app.models import AccountMapping, TransFlow
-
-# 命中的默认键名，写入 ext_json（复核台读取展示）
-AUTO_SUBJECT_KEY = "auto_subject"
 
 
 def _normalize(text: str | None) -> str:

@@ -30,7 +30,7 @@ from app.core.contract import BankTransaction, Direction, SourceType  # noqa: E4
 from app import models  # noqa: E402, F401
 from app.core.database import Base, SessionLocal, engine  # noqa: E402
 from app.models import FlowBatch, TransFlow  # noqa: E402
-from app.services import ingest as ingest_svc  # noqa: E402
+from app.ingest import service as ingest_svc  # noqa: E402
 from app.core.seed import ensure_seed  # noqa: E402
 
 

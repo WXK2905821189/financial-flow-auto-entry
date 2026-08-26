@@ -1,0 +1,222 @@
+[
+  {
+    "txn_no": "C0947BO000133AZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "09:12:35",
+    "currency": "CNY",
+    "amount": 156800.0,
+    "dc_flag": "C",
+    "counterparty_name": "北京某某科技有限公司",
+    "counterparty_account": "110900123456789012",
+    "summary": "货款"
+  },
+  {
+    "txn_no": "C0947BO00022FEZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "09:30:11",
+    "currency": "CNY",
+    "amount": 76500.0,
+    "dc_flag": "D",
+    "counterparty_name": "某某供应链管理有限公司",
+    "counterparty_account": "8110001234567890",
+    "summary": "采购款"
+  },
+  {
+    "txn_no": "C0947BO0003C9BZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "09:45:02",
+    "currency": "CNY",
+    "amount": 89500.0,
+    "dc_flag": "C",
+    "counterparty_name": "上海某某信息技术有限公司",
+    "counterparty_account": "6222001234567890123",
+    "summary": "服务费"
+  },
+  {
+    "txn_no": "C0947BO000438AZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "10:08:47",
+    "currency": "CNY",
+    "amount": 320000.0,
+    "dc_flag": "C",
+    "counterparty_name": "深圳某某电子商务有限公司",
+    "counterparty_account": "7559001234567890",
+    "summary": "平台结算款"
+  },
+  {
+    "txn_no": "C0947BO00059C8Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "10:33:19",
+    "currency": "CNY",
+    "amount": 45200.0,
+    "dc_flag": "C",
+    "counterparty_name": "某某（上海）贸易有限公司",
+    "counterparty_account": "6222001234567890124",
+    "summary": "货款"
+  },
+  {
+    "txn_no": "C0947BO00061B2Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "10:55:27",
+    "currency": "CNY",
+    "amount": 88000.0,
+    "dc_flag": "D",
+    "counterparty_name": "某某广告传媒有限公司",
+    "counterparty_account": "110900123456789016",
+    "summary": "广告费"
+  },
+  {
+    "txn_no": "C0947BO0007CC2Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "11:02:54",
+    "currency": "CNY",
+    "amount": 128000.0,
+    "dc_flag": "C",
+    "counterparty_name": "北京某某文化传媒有限公司",
+    "counterparty_account": "110900123456789013",
+    "summary": "广告服务费"
+  },
+  {
+    "txn_no": "C0947BO0008714Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "11:22:53",
+    "currency": "CNY",
+    "amount": 42300.0,
+    "dc_flag": "D",
+    "counterparty_name": "某某人力资源服务有限公司",
+    "counterparty_account": "6222001234567890129",
+    "summary": "劳务费"
+  },
+  {
+    "txn_no": "C0947BO0009722Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "11:40:26",
+    "currency": "CNY",
+    "amount": 210500.0,
+    "dc_flag": "C",
+    "counterparty_name": "某某网络科技（杭州）有限公司",
+    "counterparty_account": "6222001234567890125",
+    "summary": "项目回款"
+  },
+  {
+    "txn_no": "C0947BO000A1A1Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "13:15:08",
+    "currency": "CNY",
+    "amount": 96800.0,
+    "dc_flag": "C",
+    "counterparty_name": "广州某某软件有限公司",
+    "counterparty_account": "110900123456789014",
+    "summary": "软件开发费"
+  },
+  {
+    "txn_no": "C0947BO000BD56Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "13:48:09",
+    "currency": "CNY",
+    "amount": 25600.0,
+    "dc_flag": "D",
+    "counterparty_name": "某某云计算有限公司",
+    "counterparty_account": "110900123456789017",
+    "summary": "云服务费"
+  },
+  {
+    "txn_no": "C0947BO000CF98Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "14:02:41",
+    "currency": "CNY",
+    "amount": 67300.0,
+    "dc_flag": "C",
+    "counterparty_name": "某某（北京）科技有限公司",
+    "counterparty_account": "6222001234567890126",
+    "summary": "货款"
+  },
+  {
+    "txn_no": "C0947BO000D088Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "14:20:31",
+    "currency": "CNY",
+    "amount": 120000.0,
+    "dc_flag": "D",
+    "counterparty_name": "某某物业管理有限公司",
+    "counterparty_account": "6222001234567890130",
+    "summary": "房租"
+  },
+  {
+    "txn_no": "C0947BO000E985Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "14:47:33",
+    "currency": "CNY",
+    "amount": 154000.0,
+    "dc_flag": "C",
+    "counterparty_name": "上海某某电子商务有限公司",
+    "counterparty_account": "7559001234567891",
+    "summary": "平台结算款"
+  },
+  {
+    "txn_no": "C0947BO000FD7CZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "15:20:15",
+    "currency": "CNY",
+    "amount": 38600.0,
+    "dc_flag": "C",
+    "counterparty_name": "某某（深圳）供应链有限公司",
+    "counterparty_account": "6222001234567890127",
+    "summary": "服务费"
+  },
+  {
+    "txn_no": "C0947BO000G59AZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "15:35:44",
+    "currency": "CNY",
+    "amount": 18900.0,
+    "dc_flag": "D",
+    "counterparty_name": "某某电力有限公司",
+    "counterparty_account": "110900123456789018",
+    "summary": "电费"
+  },
+  {
+    "txn_no": "C0947BO000HB5FZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "16:05:49",
+    "currency": "CNY",
+    "amount": 52000.0,
+    "dc_flag": "C",
+    "counterparty_name": "北京某某咨询有限公司",
+    "counterparty_account": "110900123456789015",
+    "summary": "咨询费"
+  },
+  {
+    "txn_no": "C0947BO000IC5FZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "16:22:58",
+    "currency": "CNY",
+    "amount": 6850.0,
+    "dc_flag": "D",
+    "counterparty_name": "某某办公用品有限公司",
+    "counterparty_account": "6222001234567890131",
+    "summary": "办公用品采购"
+  },
+  {
+    "txn_no": "C0947BO000JC55Z",
+    "txn_date": "2026-08-24",
+    "txn_time": "17:12:37",
+    "currency": "CNY",
+    "amount": 183200.0,
+    "dc_flag": "C",
+    "counterparty_name": "某某（杭州）网络有限公司",
+    "counterparty_account": "6222001234567890128",
+    "summary": "货款"
+  },
+  {
+    "txn_no": "C0947BO000KF6FZ",
+    "txn_date": "2026-08-24",
+    "txn_time": "17:45:12",
+    "currency": "CNY",
+    "amount": 3200.0,
+    "dc_flag": "D",
+    "counterparty_name": "王某某",
+    "counterparty_account": "6222021234567890132",
+    "summary": "差旅报销"
+  }
+]

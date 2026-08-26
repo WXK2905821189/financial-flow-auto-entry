@@ -1,74 +1,48 @@
-# 财务流水自动入账 · 一期
+# 财务流水自动入账项目
 
-银行流水 → 数据中台 → 校验/复核 → 金蝶云星空自动制证 的端到端自动化系统（一期 MVP）。
+银行流水 → 数据中台 → 金蝶自动制证 → 对账留痕的一体化财务流水自动入账系统（一期）。
 
-## 一期范围
-
-- **数据中台**：统一流水契约、批次落库、去重校验（R001–R005）、审计哈希链、账↔单双向溯源
-- **采集适配层**：可插拔数据源（Mock 模拟银行 / 文件导入 CSV·Excel / 真实银企直联 API 预留）
-- **内网 Web 复核工作台**：登录门、复核队列、批量通过/驳回、流水详情抽屉、四看板（总览/银行分布/异常预警/对账钩稽）
-- **金蝶推送 + 自动制证**：复核通过后一键推送、凭证号回写、双向绑定（凭据未就绪时走 Mock）
-
-## 技术栈
-
-- 后端：Python 3.10 + FastAPI + SQLAlchemy 2.0 + MySQL 8.0（演示/测试用 SQLite）
-- 前端：自包含 ES Module + 原生 JS（无构建步骤），由 FastAPI 直接托管
-- 鉴权：JWT；审计：操作全程留痕 + 哈希链防篡改
-
-## 目录结构
+## 目录结构（整理后 · 前后端分离）
 
 ```
 财务流水自动入账项目/
-├── backend/                  # 数据中台 + 复核工作台（代码工程）
-│   ├── app/
-│   │   ├── adapters/         # 采集适配层（mock / file / api 预留）
-│   │   ├── services/         # 入库 / 校验 / 复核 / 推送 / 审计 / 播种
-│   │   ├── api/              # REST 接口（auth/ingest/review/push/trace/dashboard）
-│   │   ├── models/           # ORM 模型（ods/dwd/dim/biz/aud/用户）
-│   │   └── core/             # 安全（密码哈希/JWT）
-│   ├── web/                  # 前端复核台（index.html + css + js）
-│   ├── smoke_test.py         # 端到端冒烟测试（21 项，SQLite 覆盖）
-│   └── requirements.txt
-├── 产品经理/                  # 决策表 D1–D9 契约冻结等交付物
-├── 数据工程/                  # 数据中间池建表 SQL、采集联调约定、Mock 报文样本
-├── 财务业务顾问/              # 统一流水契约、记账复核核销规则、溯源字段清单
-└── 一期* .md / .html / .csv   # 立项架构、执行方案、分工表、甘特图、UI 原型
+├─ backend/                 # 后端数据中台（FastAPI · 四层架构 · 分层五库）
+│  ├─ app/                  #   adapters 采集适配 / services 业务 / api 接口 / core 基础设施 / models 模型
+│  ├─ tests/                #   冒烟 + 专项验证脚本（smoke / R006 / R003b / API 联通）
+│  ├─ scripts/              #   联调诊断脚本
+│  ├─ requirements.txt / .env / .env.example
+├─ frontend/                # 前端 Web 复核台（自包含 ES Module + 原生 JS，零构建，
+│  │                        #   由 FastAPI 静态托管；login/复核/溯源/四看板/系统设置）
+├─ docs/                    # 全部文档（按子域归类）
+│  ├─ 产品经理/ 财务业务顾问/ 数据工程/   # 角色文档
+│  ├─ 一期PRD/              # 模块 PRD（M1–M8）+ 技术架构图
+│  ├─ 参考资料集成汇总.md · 金蝶真实对接落地要点.md · …
+│  └─ (立项 / 执行方案 v3 / 部署隔离方案 / UI 原型 / 甘特图 / README-theme 等)
+├─ data_engineering/        # 数据工程：schema.sql / sp.sql / mock 银行服务与流水数据
+└─ submodules/              # 附带的第三方/演示
+   ├─ mvp-demo/             # 独立演示（bank-mock / kingdee-mock / platform + docker-compose）
+   └─ bankstatementparser-reference/   # 开源库参照树（本项目 R006/科目映射借鉴基准）
 ```
 
-## 快速启动（开发/预览）
-
+## 快速启动
 ```bash
 cd backend
 pip install -r requirements.txt
-# 复制 .env.example 为 .env 并按需修改；演示默认走 SQLite + Mock 推送
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+# 配置 .env（演示默认 SQLite；生产见 .env.example 走 MySQL 8.0）
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
+访问 `http://localhost:8000`，账号 `admin` / `admin123`。
 
-访问 http://localhost:8000 ，账号 `admin` / `admin123`（演示账号，上线前须改）。
-
-端到端自检：
-
+## 运行测试
 ```bash
 cd backend
-python smoke_test.py   # 全部 PASS 即链路打通
+python tests/smoke_test.py             # 端到端冒烟 21 项
+python tests/verify_r006_mapping.py    # R006 勾稽 + 科目预填
+python tests/verify_r003b_status.py    # 无户名→WARN→进复核 / FAIL→LOADED
+python tests/test_api_adapter.py       # 银企 API 采集联通 10 项
 ```
 
-## 版本管理
+## 一期里程碑
+- 契约冻结：08-27 · 金蝶链路打通：09-16 · 一期上线：09-30
 
-- 当前版本：**v0.1.0**（一期 MVP 基线）
-- 版本标记：`release/v0.1.0` 分支 + 带版本号的基线提交
-- 回退方式：在 GitHub 仓库 `Commits`/`Branches`/`Tags` 中选择目标历史提交或 `release/vX.Y.Z` 分支即可恢复对应版本
-
-## 里程碑
-
-| 里程碑 | 目标日期 |
-| --- | --- |
-| 契约冻结 | 2026-08-27 |
-| 链路打通 | 2026-09-16 |
-| 一期上线 | 2026-09-30 |
-
-## 遗留依赖（上线前须落实）
-
-- 银企直联 API 凭据（决策 D3）：`backend/app/adapters/api_adapter.py` 预留切换点
-- 金蝶云星空 OpenAPI 凭据（决策 D8）：`backend/app/services/kingdee.py` 预留切换点
-- 银行存款科目映射表（中信&招商全账户→银行存款明细科目）：财务 UAT 前提供
+> 完整文档入口见 `docs/`；架构总览见 `docs/一期PRD/00-技术架构.svg`。

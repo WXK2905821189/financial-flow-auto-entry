@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财务流水自动入账项目 · 一期实施甘特图</title>
+<style>
+  :root{
+    --ink:#1f2a3a; --muted:#6b7686; --line:#e6e9ef; --bg:#f5f6f8;
+    --blue:#4a7dfc; --blueBg:#e8efff;
+    --green:#2e9e6b; --greenBg:#e6f7ee;
+    --orange:#f29a3c; --orangeBg:#fdeeda;
+    --purple:#8b5cf6; --purpleBg:#efe9ff;
+    --red:#e5574b; --redBg:#fdeae8;
+    --today:#e5574b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg);}
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 28px 64px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+  h1{font-size:22px;margin:0 0 6px;}
+  .sub{color:var(--muted);font-size:13px;}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;}
+  .badge{font-size:12px;padding:4px 10px;border-radius:999px;font-weight:600;}
+  .b-model{background:var(--purpleBg);color:var(--purple);}
+  .b-scope{background:var(--greenBg);color:var(--green);}
+  .b-miles{background:var(--orangeBg);color:var(--orange);}
+  .meta-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:20px 0 26px;}
+  .m-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .m-card .k{font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .m-card .v{font-size:15px;font-weight:700;}
+  .m-card .v small{font-weight:500;color:var(--muted);font-size:12px;}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .gantt-head{display:flex;border-bottom:1px solid var(--line);background:#fafbfc;}
+  .gantt-row{display:flex;border-bottom:1px solid var(--line);}
+  .gantt-row:last-of-type{border-bottom:none;}
+  .gname{flex:0 0 240px;padding:10px 14px;font-size:13px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);min-width:0;}
+  .gname b{font-size:13px;line-height:1.35;}
+  .gname .tag{font-size:11px;color:var(--muted);font-weight:400;margin-top:2px;}
+  .stage .gname{background:#f2f5fa;font-weight:700;}
+  .tracks{flex:1 1 auto;position:relative;height:auto;min-height:46px;}
+  .tracks::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to right,transparent 0,transparent calc((100%/6) - 1px),var(--line) calc((100%/6) - 1px),var(--line) calc(100%/6));}
+  .week-label{position:absolute;top:0;height:100%;display:none;}
+  .bar{position:absolute;top:50%;height:20px;transform:translateY(-50%);border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 2px rgba(0,0,0,.08);cursor:default;}
+  .bar .days{opacity:.9;font-weight:400;}
+  .stage .tracks{min-height:18px;border-bottom:none;}
+  .milestones{position:relative;border-top:1px solid var(--line);background:#0b1220;}
+  .m-track{position:relative;height:52px;}
+  .m-label{position:absolute;top:6px;transform:translateX(-50%);color:#dfe6f5;font-size:11px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);padding:2px 8px;border-radius:8px;white-space:nowrap;}
+  .m-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:var(--today);border:2px solid #fff;}
+  /* legend */
+  .legend{display:flex;gap:18px;flex-wrap:wrap;padding:14px 16px;background:#fafbfc;border-top:1px solid var(--line);}
+  .lg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+  .sw{width:14px;height:14px;border-radius:4px;}
+  .foot{margin-top:22px;color:var(--muted);font-size:12px;line-height:1.8;}
+  .today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--today);z-index:3;}
+  .wall{position:absolute;top:0;bottom:0;color:#49627a;z-index:4;}
+  @media(max-width:720px){
+    .gname{flex-basis:150px;font-size:12px;}
+    .bar{padding:0 4px;font-size:10px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>财务流水自动入账项目 · 一期实施甘特图</h1>
+      <div class="sub">打开银行 → 自研数据中台 → 金蝶 数据链路 · 中信&amp;招商账户流水自动化（覆盖 ≥80%）</div>
+    </div>
+    <div class="badges">
+      <span class="badge b-model">单人 + AI 协作</span>
+      <span class="badge b-scope">仅一期（MVP 闭环）</span>
+      <span class="badge b-miles">目标 9/30 上线</span>
+    </div>
+  </header>
+
+  <div class="meta-cards">
+    <div class="m-card"><div class="k">范围</div><div class="v">11 个工作项</div></div>
+    <div class="m-card"><div class="k">周期</div><div class="v">08-24 ~ 09-30 <small>约 5.5 周</small></div></div>
+    <div class="m-card"><div class="k">今日</div><div class="v">2026-08-24</div></div>
+    <div class="m-card"><div class="k">关键里程碑</div><div class="v">9/16 链路打通<br>9/30 一期上线</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="gantt-head">
+      <div class="gname" style="border-bottom:none;"><b>工作项</b></div>
+      <div class="tracks" style="min-height:30px;display:flex;align-items:center;">
+        <span style="position:absolute;left:calc(100%/6*2 - 12px);font-size:11px;color:var(--muted);">9月初</span>
+        <span style="position:absolute;left:calc(100%/6*3 - 12px);font-size:11px;color:var(--muted);"></span>
+        <span style="position:absolute;left:calc(100%/6*4 - 12px);font-size:11px;color:var(--muted);">9月中</span>
+        <span style="position:absolute;left:calc(100%/6*5 - 12px);font-size:11px;color:var(--muted);"></span>
+        <span style="position:absolute;left:calc(100% - 40px);font-size:11px;color:var(--muted);">9月底</span>
+      </div>
+    </div>
+
+    <!-- 契约与设计 -->
+    <div class="gantt-row stage">
+      <div class="gname"><b>设计与契约</b></div>
+      <div class="tracks"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>1 · 统一流水契约冻结</b><span class="tag">D4 / D5 / D6 字段口径 · 对齐金蝶</span></div>
+      <div class="tracks" data-s="0.0" data-e="3.0" data-c="blue" data-txt="契约冻结"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>2 · 可扩展架构骨架</b><span class="tag">分层 · 采集适配器扩展点</span></div>
+      <div class="tracks" data-s="3.0" data-e="10.0" data-c="blue" data-txt="架构骨架"></div>
+    </div>
+
+    <!-- 数据与采集 -->
+    <div class="gantt-row stage">
+      <div class="gname">数据与采集</div>
+      <div class="tracks"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>3 · 数据中台落库</b><span class="tag">轻量关系库 · 批次落库·校验·留痕</span></div>
+      <div class="tracks" data-s="3.0" data-e="10.0" data-c="green" data-txt="中台落库"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>4 · 采集适配层</b><span class="tag">模拟银行API为主 · 文件兜底 · API预留</span></div>
+      <div class="tracks" data-s="4.0" data-e="11.0" data-c="green" data-txt="采集适配·模拟银行"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>5 · 数据溯源机制</b><span class="tag">批次 · 记录级ID · 审计留痕</span></div>
+      <div class="tracks" data-s="7.0" data-e="14.0" data-c="green" data-txt="溯源"></div>
+    </div>
+
+    <!-- 应用与集成 -->
+    <div class="gantt-row stage">
+      <div class="gname">应用与集成</div>
+      <div class="tracks"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>6 · 复核工作台（Web）</b><span class="tag">人工复核 · 简版登录 · 一键推送</span></div>
+      <div class="tracks" data-s="11.0" data-e="17.0" data-c="orange" data-txt="复核工作台"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>7 · 金蝶推送 + 自动制证</b><span class="tag">OpenAPI · 凭证模板 · 核销规则</span></div>
+      <div class="tracks" data-s="18.0" data-e="23.0" data-c="orange" data-txt="金蝶推送·制证"></div>
+    </div>
+
+    <!-- 平台与可视化 -->
+    <div class="gantt-row stage">
+      <div class="gname">平台与可视化</div>
+      <div class="tracks"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>8 · 部署与隔离</b><span class="tag">独立云VPC · 简版登录 · 权限隔离</span></div>
+      <div class="tracks" data-s="11.0" data-e="17.0" data-c="purple" data-txt="部署隔离"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>9 · MVP 可视化看板</b><span class="tag">四看板 自研轻量制</span></div>
+      <div class="tracks" data-s="14.0" data-e="22.0" data-c="purple" data-txt="可视化看板"></div>
+    </div>
+
+    <!-- 验收与上线 -->
+    <div class="gantt-row stage">
+      <div class="gname">验收与上线</div>
+      <div class="tracks"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>10 · 测试与验收（UAT）</b><span class="tag">契约/单元/集成/对账/切换测试</span></div>
+      <div class="tracks" data-s="24.0" data-e="32.0" data-c="red" data-txt="测试与验收"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gname"><b>11 · 一期上线与平稳</b><span class="tag">文件兜底真实流水 · 上线发布</span></div>
+      <div class="tracks" data-s="35.0" data-e="37.0" data-c="red" data-txt="上线"></div>
+    </div>
+
+    <!-- Milestones -->
+    <div class="milestones">
+      <div class="m-track" id="mtrack">
+        <span class="m-label" data-m="3.0">契约冻结 · 8/27</span>
+        <span class="m-label" data-m="23.0" style="background:var(--blue);border-color:var(--blue);">链路打通 · 9/16</span>
+        <span class="m-label" data-m="37.0" style="background:var(--red);border-color:var(--red);">一期上线 · 9/30</span>
+        <span class="m-dot" data-d="3.0"></span>
+        <span class="m-dot" data-d="23.0"></span>
+        <span class="m-dot" data-d="37.0"></span>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="lg"><span class="sw" style="background:var(--blue)"></span>设计与契约</span>
+      <span class="lg"><span class="sw" style="background:var(--green)"></span>数据与采集</span>
+      <span class="lg"><span class="sw" style="background:var(--orange)"></span>应用与集成</span>
+      <span class="lg"><span class="sw" style="background:var(--purple)"></span>平台与可视化</span>
+      <span class="lg"><span class="sw" style="background:var(--red)"></span>验收与上线</span>
+      <span class="lg"><span class="sw" style="background:var(--today);border-radius:50%"></span>里程碑</span>
+    </div>
+  </div>
+
+  <div class="foot">
+    说明：本表按 <b>单人 + AI</b> 编排 —— 本人为唯一负责人，职能（数据 / 采集 / UI / 测试 / 运维）由 AI Agent 承接并可并行推进；关键决策与人工复核点仍由本人介入。
+    依赖关键路径：契约冻结 → 中台/采集 → 复核台 → 金蝶推送（9/16 链路打通）→ 测试验收 → 9/30 一期上线。<br>
+    真实银行凭据（D3）为二期联调前置，一期用「模拟银行 API」先行，不影响本条关键路径。
+  </div>
+
+</div>
+
+<script>
+  // Domain: 0 (08-24) .. 37 (09-30)
+  (function(){
+    var colStr = {blue:"#4a7dfc",green:"#2e9e6b",orange:"#f29a3c",purple:"#8b5cf6",red:"#e5574b"};
+    var rows = document.querySelectorAll('.gantt-row .tracks');
+    rows.forEach(function(t){
+      var s = parseFloat(t.getAttribute('data-s')), e = parseFloat(t.getAttribute('data-e'));
+      if(isNaN(s)) return;
+      var c = colStr[t.getAttribute('data-c')]||colStr.blue;
+      var bar = document.createElement('div');
+      bar.className='bar';
+      bar.style.left=(s/37*100)+'%';
+      bar.style.width=((e-s)/37*100)+'%';
+      bar.style.background=c;
+      var txt=t.getAttribute('data-txt');
+      bar.innerHTML='<span class="txt">'+txt+'</span>';
+      t.appendChild(bar);
+    });
+    document.querySelectorAll('.m-label').forEach(function(m){
+      var x=parseFloat(m.getAttribute('data-m'))/37*100;
+      m.style.left=x+'%';
+    });
+    document.querySelectorAll('.m-dot').forEach(function(d){
+      var x=parseFloat(d.getAttribute('data-d'))/37*100;
+      d.style.left=x+'%';
+    });
+  })();
+</script>
+</body>
+</html>

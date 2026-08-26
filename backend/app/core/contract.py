@@ -16,6 +16,11 @@ from enum import Enum
 from pydantic import BaseModel, Field, field_validator
 
 CONTRACT_VERSION = "v1"  # 对齐 dwd_trans_flow.contract_version 默认值
+# 规则预填科目的 ext_json 键名：ingest/mapper 写入、review/api 展示，上提为跨域契约常量
+AUTO_SUBJECT_KEY = "auto_subject"
+# 已确认科目的 ext_json 键名：review 写入、push 制证消费。
+# 值为 {subject_code, subject_name, source}，其中 source 为 RULE 或 MANUAL。
+APPROVED_SUBJECT_KEY = "approved_subject"
 
 
 class Direction(str, Enum):
@@ -77,6 +82,7 @@ class PushStatus(str, Enum):
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
+    UNCERTAIN = "UNCERTAIN"  # 远端连接中断，可能已制证，须先查单确认
 
 
 class BankTransaction(BaseModel):

@@ -9,8 +9,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.permissions import ROLE_PERMISSIONS
 from app.core.security import hash_password
-from app.models import AccountMapping, Bank, ValidationRule
+from app.models import AccountMapping, Bank, RolePermission, ValidationRule
 from app.models.sys_user import User
 
 
@@ -18,6 +19,7 @@ def ensure_seed(db: Session) -> None:
     _seed_banks(db)
     _seed_rules(db)
     _seed_mappings(db)
+    _seed_role_permissions(db)
     _seed_admin(db)
     db.commit()
 
@@ -83,6 +85,23 @@ def _seed_mappings(db: Session) -> None:
         )
 
 
+def _seed_role_permissions(db: Session) -> None:
+    for role, permissions in ROLE_PERMISSIONS.items():
+        db.query(RolePermission).filter(
+            RolePermission.role == role,
+            ~RolePermission.permission_code.in_(permissions),
+        ).delete(synchronize_session=False)
+        for permission in permissions:
+            exists = db.execute(
+                select(RolePermission.permission_id).where(
+                    RolePermission.role == role,
+                    RolePermission.permission_code == permission,
+                )
+            ).scalar_one_or_none()
+            if exists is None:
+                db.add(RolePermission(role=role, permission_code=permission))
+
+
 def _seed_admin(db: Session) -> None:
     username = settings.initial_admin_username
     if db.execute(select(User).where(User.username == username)).scalar_one_or_none() is None:
@@ -91,7 +110,8 @@ def _seed_admin(db: Session) -> None:
                 username=username,
                 password_hash=hash_password(settings.initial_admin_password),
                 display_name="财务管理员",
-                role="ADMIN",
+                role="SYSTEM_ADMIN",
                 is_active=True,
+                password_changed_at=None,
             )
         )

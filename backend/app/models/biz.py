@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, BIGINT_PK
@@ -25,6 +25,9 @@ class FlowReview(Base):
 
 class PushRecord(Base):
     __tablename__ = "biz_push_record"
+    __table_args__ = (
+        UniqueConstraint("record_id", name="uq_biz_push_record_record_id"),
+    )
 
     push_id: Mapped[int] = mapped_column(BIGINT_PK, primary_key=True, autoincrement=True)
     record_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("dwd_trans_flow.record_id"), nullable=False, index=True)

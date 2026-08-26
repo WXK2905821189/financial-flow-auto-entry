@@ -16,12 +16,25 @@ class Settings(BaseSettings):
     # 数据库（独立部署，仅财务网段可访问）；决策 D7=A 轻量关系库 MySQL 8.0
     database_url: str = "mysql+pymysql://waterflow:waterflow@127.0.0.1:3306/waterflow?charset=utf8mb4"
 
-    # 简版登录（D2=A）：JWT + 初始管理员
+    # 本地账号认证：短期访问 Cookie + 轮换刷新会话。前端、后端独立部署时
+    # 通过 FRONTEND_ORIGINS 显式列出前端来源，禁止凭据 CORS 使用通配符。
     jwt_secret: str = "CHANGE_ME_JWT_SECRET"
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 480  # 8 小时
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_minutes: int = 480
+    frontend_origins: str = "http://localhost:8000"
+    auth_cookie_name: str = "wf_access"
+    refresh_cookie_name: str = "wf_refresh"
+    csrf_cookie_name: str = "wf_csrf"
+    auth_cookie_samesite: str = "lax"
+    auth_cookie_secure: bool = False
     initial_admin_username: str = "admin"
     initial_admin_password: str = "admin123"
+    max_failed_logins: int = 5
+    login_lockout_minutes: int = 15
+
+    # 独立部署时后端不托管前端静态文件；开发/演示环境可打开。
+    serve_frontend_static: bool = True
 
     # 银企直连服务（决策 D6 主路：模拟银行 API 跑通生产链路；真实凭据 D3 就绪后切换）
     bank_api_base_url: str = "http://127.0.0.1:8080"
@@ -79,6 +92,28 @@ class Settings(BaseSettings):
             )
         if "CHANGE_ME" in self.database_url or "waterflow:waterflow" in self.database_url:
             raise ValueError("生产环境 DATABASE_URL 禁止使用默认/占位符口令")
+        initial_password_kinds = sum(
+            (
+                any(char.islower() for char in self.initial_admin_password),
+                any(char.isupper() for char in self.initial_admin_password),
+                any(char.isdigit() for char in self.initial_admin_password),
+                any(not char.isalnum() for char in self.initial_admin_password),
+            )
+        )
+        if len(self.initial_admin_password) < 12 or initial_password_kinds < 3:
+            raise ValueError("生产环境 INITIAL_ADMIN_PASSWORD 至少 12 位，且须包含至少三类字符")
+        if not self.auth_cookie_secure:
+            raise ValueError("生产环境 AUTH_COOKIE_SECURE 必须为 true")
+        if self.serve_frontend_static:
+            raise ValueError("生产环境 SERVE_FRONTEND_STATIC 必须为 false，前端需独立部署")
+        if "*" in self.frontend_origins:
+            raise ValueError("生产环境 FRONTEND_ORIGINS 不得使用通配符")
+        if self.auth_cookie_samesite.lower() not in {"lax", "strict", "none"}:
+            raise ValueError("AUTH_COOKIE_SAMESITE 仅支持 lax/strict/none")
+
+    @property
+    def frontend_origins_list(self) -> list[str]:
+        return [item.strip() for item in self.frontend_origins.split(",") if item.strip()]
 
 
 settings = Settings()

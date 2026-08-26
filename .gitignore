@@ -3,8 +3,9 @@
 .env.local
 .env.*.local
 
-# ==== 运行时数据库（不入库，演示用 SQLite）====
+# ==== 运行时数据库（不入库，演示用 SQLite，含备份）====
 *.db
+*.db.bak*
 *.sqlite
 *.sqlite3
 
@@ -27,3 +28,19 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# ==== 银行 SDK / 压缩包 / 证书 / 凭据（禁止上传 GitHub）====
+中信银行SDK/
+backend/vendor/
+docs/中信银行银企直联接口说明书(集团客户)V6.0.0.1_转自DOC.docx
+*.zip
+*.7z
+*.rar
+*.jar
+*.properties
+*.pem
+*.pfx
+*.p12
+*.jks
+*.crt
+*.cer

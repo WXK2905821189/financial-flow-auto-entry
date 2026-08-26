@@ -29,12 +29,12 @@ from sqlalchemy import select  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from mock_bank_api import Handler  # noqa: E402
-from app.adapters import get_adapter  # noqa: E402
+from app.ingest.adapters import get_adapter  # noqa: E402
 from app.core.config import settings  # noqa: E402
 from app.core.contract import SourceType  # noqa: E402
 from app.core.database import SessionLocal  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import FlowBatch  # noqa: E402
+from app.models import Bank, FlowBatch  # noqa: E402
 
 _results: list[tuple[str, bool, str]] = []
 
@@ -89,12 +89,26 @@ def run() -> None:
         # ⑤ 端到端：/api/ingest/api → orchestrating落库
         with TestClient(app) as c:
             r = c.post("/api/auth/login", json={"username": "admin", "password": "admin123"})
-            token = r.json()["access_token"]
-            h = {"Authorization": f"Bearer {token}"}
-            r = c.post(
+            check("api.e2e.login", r.status_code == 200, f"status={r.status_code}")
+            h = {"X-CSRF-Token": c.cookies.get("wf_csrf", "")}
+            r = c.post("/api/auth/password/change", json={"current_password": "admin123", "new_password": "AdminPass123!"}, headers=h)
+            check("api.e2e.admin_password_changed", r.status_code == 200, f"status={r.status_code}")
+            db = SessionLocal()
+            try:
+                bank_id = db.query(Bank).filter(Bank.bank_code == "CITIC").one().bank_id
+            finally:
+                db.close()
+            r = c.post("/api/auth/users", json={"username": "operator", "display_name": "采集员", "password": "ValidPass123!", "role": "INGEST_OPERATOR", "scopes": [{"bank_id": bank_id}]}, headers=h)
+            check("api.e2e.create_operator", r.status_code == 201, f"status={r.status_code}")
+
+        with TestClient(app) as operator:
+            operator.post("/api/auth/login", json={"username": "operator", "password": "ValidPass123!"})
+            operator_h = {"X-CSRF-Token": operator.cookies.get("wf_csrf", "")}
+            operator.post("/api/auth/password/change", json={"current_password": "ValidPass123!", "new_password": "OperatorPass123!"}, headers=operator_h)
+            r = operator.post(
                 "/api/ingest/api",
                 params={"bank_code": "CITIC", "account_no": "8110901234567890"},
-                headers=h,
+                headers=operator_h,
             )
             body = r.json()
             check("api.e2e.ingest", r.status_code == 200 and body.get("loaded", 0) > 0,
@@ -103,7 +117,7 @@ def run() -> None:
             try:
                 types = set(
                     db.execute(
-                        select(FlowBatch.source_type).where(FlowBatch.imported_by == "admin")
+                        select(FlowBatch.source_type).where(FlowBatch.imported_by == "operator")
                     ).scalars()
                 )
                 check("api.e2e.source_type", "API" in types, f"source_types={sorted(types)}")

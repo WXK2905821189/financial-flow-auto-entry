@@ -24,8 +24,8 @@ os.environ["ENVIRONMENT"] = "test"
 from app.core.contract import BankTransaction, Direction, SourceType  # noqa: E402
 from app.core.database import Base, SessionLocal, engine  # noqa: E402
 from app.models import TransFlow  # noqa: E402
-from app.services import ingest as ingest_svc  # noqa: E402
-from app.services import review as review_svc  # noqa: E402
+from app.ingest import service as ingest_svc  # noqa: E402
+from app.review import service as review_svc  # noqa: E402
 from app.core.seed import ensure_seed  # noqa: E402
 
 _fails: list[str] = []

@@ -1,0 +1,22 @@
+codecov:
+  require_ci_to_pass: true
+  notify:
+    wait_for_ci: true
+
+coverage:
+  status:
+    project:
+      default:
+        # Honest gate: don't regress against the base commit instead
+        # of forcing line-chasing tests to hold an artificial 100%.
+        target: auto
+        threshold: 0.5%
+    patch:
+      default:
+        target: 90%
+        threshold: 0%
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: true

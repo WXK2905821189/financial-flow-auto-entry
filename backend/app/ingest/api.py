@@ -8,9 +8,10 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from sqlalchemy.orm import Session
 
 from app.ingest.adapters import get_adapter
-from app.core.deps import get_current_user
+from app.core.deps import require_account_scope, require_permission
 from app.core.contract import SourceType
 from app.core.database import get_db
+from app.core.permissions import Permission
 from app.ingest import service as ingest_svc
 
 router = APIRouter(prefix="/api/ingest", tags=["ingest"])
@@ -24,9 +25,10 @@ def ingest_mock(
     begin_balance: Decimal | None = None,
     end_balance: Decimal | None = None,
     db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_permission(Permission.INGEST_WRITE.value)),
     request: Request = None,
 ):
+    require_account_scope(user, db, bank_code=bank_code, account_no=account_no, request=request)
     adapter = get_adapter(SourceType.MOCK)
     txns = adapter.fetch(bank_code=bank_code, account_no=account_no, count=count)
     summary = ingest_svc.ingest(
@@ -51,9 +53,10 @@ def ingest_api(
     begin_balance: Decimal | None = None,
     end_balance: Decimal | None = None,
     db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_permission(Permission.INGEST_WRITE.value)),
     request: Request = None,
 ):
+    require_account_scope(user, db, bank_code=bank_code, account_no=account_no, request=request)
     adapter = get_adapter(SourceType.API)
     try:
         txns = adapter.fetch(
@@ -83,9 +86,10 @@ async def ingest_file(
     begin_balance: Decimal | None = Form(None),
     end_balance: Decimal | None = Form(None),
     db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_permission(Permission.INGEST_WRITE.value)),
     request: Request = None,
 ):
+    require_account_scope(user, db, bank_code=bank_code, account_no=account_no, request=request)
     content = await file.read()
     adapter = get_adapter(SourceType.FILE)
     diagnostics: dict = {}

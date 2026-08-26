@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>财务流水自动入账 · 复核工作台</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+
+  <!-- ===== 登录 ===== -->
+  <div id="login">
+    <div class="login-box">
+      <div class="logo"><div class="mark">账</div><div><h1>财务流水自动入账</h1><div class="sub">数据中台 · 内网复核工作台（一期）</div></div></div>
+      <label for="lg-user">账号</label>
+      <input id="lg-user" placeholder="财务账号" autocomplete="username" />
+      <label for="lg-pass">密码</label>
+      <input id="lg-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+      <div class="login-error" id="lg-error"></div>
+      <button class="login-btn" id="lg-btn">登 录</button>
+      <div class="secure-note"><span class="dot"></span> 内网隔离访问 · 仅财务账号可登录 · 操作全程留痕</div>
+    </div>
+  </div>
+
+  <!-- ===== 主应用 ===== -->
+  <div id="app">
+    <aside id="sidebar">
+      <div class="side-head">
+        <div class="mark">账</div>
+        <div><b>财务流水自动入账</b><span>复核工作台 · 一期 MVP</span></div>
+      </div>
+      <nav class="side-nav">
+        <div class="nav-group" data-roles="SYSTEM_ADMIN,ADMIN,FINANCE_MANAGER,REVIEWER">复核</div>
+        <button class="nav-item active" data-view="review" data-roles="SYSTEM_ADMIN,ADMIN,FINANCE_MANAGER,REVIEWER"><span class="ico">✎</span>复核工作台 <span class="badge" id="nav-badge-review"></span></button>
+        <div class="nav-group">可视化看板</div>
+        <button class="nav-item" data-view="dash" data-tab="overview"><span class="ico">▤</span>流水总览</button>
+        <button class="nav-item" data-view="dash" data-tab="bank"><span class="ico">◔</span>银行分布</button>
+        <button class="nav-item" data-view="dash" data-tab="alert"><span class="ico">⚠</span>异常预警 <span class="badge" id="nav-badge-alert"></span></button>
+        <button class="nav-item" data-view="dash" data-tab="recon"><span class="ico">⇄</span>对账钩稽</button>
+        <div class="nav-group" data-roles="SYSTEM_ADMIN,ADMIN">对接</div>
+        <button class="nav-item" data-view="settings" data-roles="SYSTEM_ADMIN,ADMIN"><span class="ico">⌁</span>系统设置</button>
+        <div class="nav-group">账号</div>
+        <button class="nav-item" data-view="account"><span class="ico">♙</span>账号安全</button>
+        <button class="nav-item" data-view="users" data-roles="SYSTEM_ADMIN,ADMIN"><span class="ico">♙</span>用户与权限</button>
+      </nav>
+      <div class="side-foot">
+        <div class="uid"><span class="avatar" id="side-avatar">财</span><div><div style="color:#e2e8f0" id="side-name">--</div><div id="side-role">内网 · 财务专用网段</div></div></div>
+        <button class="logout" id="logout-btn"><span class="ico">⏻</span>退出登录</button>
+      </div>
+    </aside>
+
+    <div id="main">
+      <div id="topbar">
+        <div class="crumb"><span id="crumb">复核工作台</span><small id="crumb-sub"></small></div>
+        <div class="right">
+          <span class="env-tag" id="env-tag" data-roles="SYSTEM_ADMIN,ADMIN">Mock 数据源</span>
+          <div class="notify-wrap">
+            <button class="icon-btn" id="notify-btn" title="通知"><span class="dot" id="notify-dot" style="display:none"></span>🔔</button>
+            <div class="notify-pop" id="notify-pop"></div>
+          </div>
+          <span style="font-size:12px;color:var(--muted)" id="clock">--</span>
+        </div>
+      </div>
+      <div id="content"><main class="view" id="view"></main></div>
+    </div>
+  </div>
+
+  <!-- ===== 详情抽屉 ===== -->
+  <div id="mask"></div>
+  <div id="drawer">
+    <div class="dw-hd"><h3 id="dw-title">流水详情</h3><span id="dw-badge"></span><button class="x" id="dw-close">✕</button></div>
+    <div class="dw-bd" id="dw-body"></div>
+    <div class="dw-ft" id="dw-foot"></div>
+  </div>
+
+  <!-- ===== 弹窗 ===== -->
+  <div id="modal-wrap">
+    <div id="modal">
+      <div class="mo-hd"><div class="ic" id="mo-ic">✓</div><div><h4 id="mo-title"></h4><p id="mo-sub"></p></div></div>
+      <div class="mo-bd" id="mo-body"></div>
+      <div class="mo-ft" id="mo-ft"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

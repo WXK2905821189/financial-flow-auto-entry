@@ -1,0 +1,41 @@
+{
+  "root": "backend/app",
+  "shared": ["core", "models"],
+  "domains": {
+    "ingest": {
+      "path": "ingest",
+      "deps": ["core", "models"],
+      "entry": "POST /api/ingest/mock|api|file"
+    },
+    "review": {
+      "path": "review",
+      "deps": ["core", "models"],
+      "entry": "GET /api/review/pending, POST /api/review/decide[-batch]"
+    },
+    "push": {
+      "path": "push",
+      "deps": ["core", "models"],
+      "entry": "POST /api/push/record|batch"
+    },
+    "dashboard": {
+      "path": "dashboard",
+      "deps": ["core", "models"],
+      "entry": "GET /api/dashboard/*"
+    },
+    "settings": {
+      "path": "settings",
+      "deps": ["core", "models", "ingest(健康检查，单向、函数级)"],
+      "entry": "GET /api/settings/*"
+    },
+    "trace": {
+      "path": "trace",
+      "deps": ["core", "models"],
+      "entry": "GET /api/trace/*"
+    },
+    "auth": {
+      "path": "auth",
+      "deps": ["core", "models"],
+      "entry": "POST /api/auth/login"
+    }
+  }
+}
