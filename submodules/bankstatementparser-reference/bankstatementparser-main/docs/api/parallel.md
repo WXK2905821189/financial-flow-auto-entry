@@ -1,3 +1,0 @@
-# parallel
-
-::: bankstatementparser.parallel

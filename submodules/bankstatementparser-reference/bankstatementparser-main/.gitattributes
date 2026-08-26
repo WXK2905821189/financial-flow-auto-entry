@@ -1,3 +1,0 @@
-# Shell scripts must keep LF endings — CRLF breaks bash on Windows
-# checkouts (runners default to core.autocrlf=true).
-*.sh text eol=lf

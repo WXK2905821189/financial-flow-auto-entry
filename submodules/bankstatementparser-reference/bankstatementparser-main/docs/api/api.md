@@ -1,3 +1,0 @@
-# api
-
-::: bankstatementparser.api
